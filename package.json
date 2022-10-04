@@ -1,0 +1,21 @@
+{
+  "name": "@example/basics",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/solid-js": "^1.1.0",
+    "@astrojs/tailwind": "^2.0.2",
+    "@use-gesture/vanilla": "^10.2.20",
+    "astro": "^1.4.4",
+    "solid-js": "^1.4.3",
+    "tailwindcss": "^3.0.24"
+  }
+}
