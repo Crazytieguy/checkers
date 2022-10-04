@@ -45,7 +45,7 @@ export function Piece(props: {
 
   const gesture = new DragGesture(piece, ({ active, movement, xy }) => {
     const [x, y] = xy;
-    if (active) {
+    if (active && allowedToMove()) {
       const selectedIdx = cells.findIndex((cell) => {
         const { top, right, bottom, left } = cell.getBoundingClientRect();
         return x >= left && x <= right && y >= top && y <= bottom;
