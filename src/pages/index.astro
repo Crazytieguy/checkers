@@ -1,7 +1,12 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Board from "../components/Board";
 ---
 
 <Layout title="Welcome to Astro.">
-  <main></main>
+  <main
+    class="bg-gradient-to-br from-lime-50 to-lime-500 grid min-h-screen place-content-center"
+  >
+    <Board client:only="solid-js" />
+  </main>
 </Layout>
