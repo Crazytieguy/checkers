@@ -1,30 +1,37 @@
 import { DragGesture } from "@use-gesture/vanilla";
-import { createSignal, JSX, onCleanup, Show } from "solid-js";
+import { createSignal, onCleanup, Show } from "solid-js";
+import { cells, playerSide, setSelected, turn } from "../logic/game";
 
 export function Piece(props: {
-  color: "red" | "black";
+  side: playerSide;
   row: number;
   col: number;
   disabled?: true;
 }) {
   const [movement, setMovement] = createSignal([0, 0]);
-  const transition = ([x, y]: number[]) =>
-    x === 0 && y === 0 ? "transition-transform duration-75" : "";
+  const movementIsZero = () => movement()[0] === 0 && movement()[1] === 0;
+  const allowedToMove = () => props.side === turn();
 
   const piece = (
     <svg
-      class={`absolute ${transition(movement())}`}
+      classList={{
+        "transition-transform": movementIsZero(),
+        "duration-75": movementIsZero(),
+      }}
+      class="absolute"
       style={{
         "grid-column": `${props.col + 1} / ${props.col + 1}`,
         "grid-row": `${props.row + 1} / ${props.row + 1}`,
         "touch-action": "none",
-        transform: `translate(${movement()[0]}px, ${movement()[1]}px)`,
+        transform: allowedToMove()
+          ? `translate(${movement()[0]}px, ${movement()[1]}px)`
+          : "",
       }}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 100 100"
     >
-      <circle cx="50" cy="50" r="45" fill={props.color} />
+      <circle cx="50" cy="50" r="45" fill={props.side} />
       <circle
         fill="none"
         cx="50"
@@ -34,12 +41,19 @@ export function Piece(props: {
         stroke-width="3"
       />
     </svg>
-  ) as JSX.Element & EventTarget;
+  ) as SVGElement;
 
-  const gesture = new DragGesture(piece, ({ active, movement }) => {
+  const gesture = new DragGesture(piece, ({ active, movement, xy }) => {
+    const [x, y] = xy;
     if (active) {
+      const selectedIdx = cells.findIndex((cell) => {
+        const { top, right, bottom, left } = cell.getBoundingClientRect();
+        return x >= left && x <= right && y >= top && y <= bottom;
+      });
+      setSelected(selectedIdx);
       setMovement(movement);
     } else {
+      setSelected(-1);
       setMovement([0, 0]);
     }
   });

@@ -1,20 +1,16 @@
+import { cells } from "../logic/game";
 import { Piece } from "./Piece";
 
 export default function Board() {
-  const cells = new Array(64).fill(undefined).map((_, idx) => {
-    const row = Math.floor(idx / 8);
-    const rem = (idx + row) % 2;
-    return <div class={rem === 0 ? "bg-zinc-300" : "bg-zinc-500"} />;
-  });
-  const initialBlackPieces = new Array(12).fill(undefined).map((_, idx) => {
+  const initialBlackPieces = Array.from({ length: 12 }, (_, idx) => {
     const row = Math.floor(idx / 4);
     const col = (idx * 2 + 1 + row) % 8;
-    return <Piece {...{ col, row, color: "black" }} />;
+    return <Piece {...{ col, row, side: "black" }} />;
   });
-  const initialRedPieces = new Array(12).fill(undefined).map((_, idx) => {
+  const initialRedPieces = Array.from({ length: 12 }, (_, idx) => {
     const row = Math.floor(idx / 4) + 5;
     const col = (idx * 2 + 1 + row) % 8;
-    return <Piece {...{ col, row, color: "red" }} />;
+    return <Piece {...{ col, row, side: "red" }} />;
   });
   return (
     <div
