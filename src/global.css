@@ -4,7 +4,7 @@
   transition-duration: 500ms;
 }
 
-.toggle {
+.theme-toggle {
   --size: 1em;
   --ray-size: calc(var(--size) * -0.4);
   --offset-orthogonal: calc(var(--size) * 0.65);
@@ -33,7 +33,7 @@
     var(--offset-diagonal) calc(var(--offset-diagonal) * -1) 0 var(--ray-size);
 }
 
-.dark .toggle {
+.dark .theme-toggle {
   box-shadow: inset calc(var(--size) * 0.33) calc(var(--size) * -0.25) 0;
   color: hsl(240, 100%, 95%);
   transform: none;

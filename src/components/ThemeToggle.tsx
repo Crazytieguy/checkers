@@ -12,6 +12,10 @@ const toggleDark = () => {
 
 export default function ThemeToggle() {
   return (
-    <input id="toggle" class="toggle" type="checkbox" onChange={toggleDark} />
+    <button
+      class="theme-toggle"
+      title="Togles dark theme"
+      onClick={toggleDark}
+    />
   );
 }
