@@ -13,12 +13,14 @@ export default function WinnerDialog(props: {
     }
   });
   return (
-    <dialog ref={self!} class="rounded-2xl">
+    <dialog
+      ref={self!}
+      class="rounded-2xl border border-black bg-blue-light dark:bg-grey-dark dark:text-grey-light"
+    >
       <h2 class="text-4xl font-bold">
         <span
           classList={{
-            "text-red-600": props.winner === "red",
-            "text-black": props.winner === "black",
+            "text-red": props.winner === "red",
           }}
         >
           {props.winner}
@@ -27,7 +29,7 @@ export default function WinnerDialog(props: {
       </h2>
       <form class="mt-5" method="dialog">
         <button
-          class="rounded-lg bg-violet-800 p-2 text-white shadow shadow-black"
+          class="shadow-blac rounded-lg bg-gradient-to-br from-grey-light to-grey-medium p-2 shadow shadow-blue-medium dark:from-blue-medium dark:to-blue-dark dark:shadow-black"
           onClick={() => props.restartGame()}
         >
           Restart Game
