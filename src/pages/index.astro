@@ -1,14 +1,18 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Board from "../components/Board";
+import Github from "../components/Github.astro";
 ---
 
 <Layout title="Play Checkers">
   <main
     class="bg-gradient-to-br from-lime-50 to-lime-500 min-h-screen grid justify-center content-start gap-4"
   >
-    <header>
-      <h1 class="text-4xl text-center">Play Checkers!</h1>
+    <header class="flex items-end justify-between">
+      <h1 class="text-4xl text-center mx-auto">Play Checkers!</h1>
+      <a href="https://github.com/Crazytieguy/checkers" target="_blank">
+        <Github />
+      </a>
     </header>
     <Board client:only="solid-js" />
   </main>
