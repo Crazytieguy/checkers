@@ -1,4 +1,4 @@
-import { createMemo } from "solid-js";
+import { batch, createMemo } from "solid-js";
 import { createStore } from "solid-js/store";
 import { xyIsInCell } from "./ui";
 
@@ -32,12 +32,14 @@ export function newGame(cells: HTMLDivElement[]) {
       (v) => v?.fromIdx === pieceIdx && v.toIdx === selectedCellIdx
     );
     if (!validation?.valid) return;
-    setGameState("pieces", selectedCellIdx, gameState.pieces[pieceIdx]);
-    setGameState("pieces", pieceIdx, null);
-    if (validation.eat !== undefined) {
-      setGameState("pieces", validation.eat, null);
-    }
-    setGameState("turn", other);
+    batch(() => {
+      setGameState("pieces", selectedCellIdx, gameState.pieces[pieceIdx]);
+      setGameState("pieces", pieceIdx, null);
+      if (validation.eat !== undefined) {
+        setGameState("pieces", validation.eat, null);
+      }
+      setGameState("turn", other);
+    });
   };
   return { gameState, playTurn, allValidMoves, gameOver, restartGame };
 }
