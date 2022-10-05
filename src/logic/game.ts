@@ -26,16 +26,24 @@ export function idxToPosition(idx: number) {
 }
 
 function positionToIdx({ row, col }: { row: number; col: number }) {
+  if (row < 0 || row > 7 || col < 0 || col > 7) return -1;
   return row * 8 + col;
 }
 
 export function getPlayTurn(cells: HTMLDivElement[]) {
   return (pieceIdx: number, xy: { x: number; y: number }) => {
+    const allValidMoves = getAllValidMoves();
+    if (allValidMoves.length === 0) {
+      setTimeout(() => {
+        alert(`${other(gameState.turn)} wins!`);
+      });
+      return;
+    }
     const selectedCellIdx = cells.findIndex((cell) => xyIsInCell(xy, cell));
-    const validation = validateMove({
-      fromIdx: pieceIdx,
-      toIdx: selectedCellIdx,
-    });
+
+    const validation = allValidMoves.find(
+      (v) => v?.fromIdx === pieceIdx && v.toIdx === selectedCellIdx
+    );
     if (!validation?.valid) return;
     setTimeout(() => {
       setGameState("pieces", selectedCellIdx, gameState.pieces[pieceIdx]);
@@ -43,9 +51,30 @@ export function getPlayTurn(cells: HTMLDivElement[]) {
       if (validation.eat !== undefined) {
         setGameState("pieces", validation.eat, null);
       }
-      setGameState("turn", gameState.turn === "red" ? "black" : "red");
+      setGameState("turn", other);
     });
   };
+}
+
+const other = (p: playerSide) => (p === "red" ? "black" : "red");
+
+function getAllValidMoves() {
+  const validations = gameState.pieces
+    .flatMap((piece, idx) => {
+      if (!piece) return [];
+      const rowDirection = piece === "red" ? -1 : 1;
+      const { row, col } = idxToPosition(idx);
+      return [
+        { row: row + rowDirection, col: col + 1 },
+        { row: row + rowDirection, col: col - 1 },
+        { row: row + rowDirection * 2, col: col + 2 },
+        { row: row + rowDirection * 2, col: col - 2 },
+      ].map((pos) => validateMove({ fromIdx: idx, toIdx: positionToIdx(pos) }));
+    })
+    .filter((v) => v);
+  const eats = validations.filter((v) => v?.eat !== undefined);
+  if (eats.length > 0) return eats;
+  return validations;
 }
 
 function validateMove({ fromIdx, toIdx }: { fromIdx: number; toIdx: number }) {
@@ -62,6 +91,10 @@ function validateMove({ fromIdx, toIdx }: { fromIdx: number; toIdx: number }) {
   if (gameState.pieces[toIdx]) return;
 
   const from = { ...idxToPosition(fromIdx), piece: gameState.pieces[fromIdx] };
+
+  // check turn
+  if (from.piece !== gameState.turn) return;
+
   const rowDiff = to.row - from.row;
 
   // only move forward
@@ -75,7 +108,7 @@ function validateMove({ fromIdx, toIdx }: { fromIdx: number; toIdx: number }) {
 
   // moving 1 is legal
   if (Math.abs(rowDiff) === 1) {
-    return { valid: true };
+    return { valid: true, fromIdx, toIdx };
   }
 
   // don't move more than 2
@@ -87,7 +120,7 @@ function validateMove({ fromIdx, toIdx }: { fromIdx: number; toIdx: number }) {
   });
 
   // no piece to eat
-  if (!gameState.pieces[eat]) return;
+  if (gameState.pieces[eat] !== other(from.piece)) return;
 
-  return { valid: true, eat };
+  return { valid: true, fromIdx, toIdx, eat };
 }
