@@ -16,10 +16,7 @@ export default function Game() {
       class="transition-opacity duration-1000"
       classList={{ "opacity-0": !opaque() }}
     >
-      <div
-        class="relative my-6 grid aspect-square grid-cols-8 place-content-stretch bg-gradient-to-br from-white to-black shadow-md shadow-black"
-        style={{ height: "min(70vh, 70vw)" }}
-      >
+      <div class="relative my-6 grid aspect-square h-[var(--board-size)] grid-cols-8 place-content-stretch bg-gradient-to-br from-white to-black shadow-md shadow-black">
         {cells}
         <Show when={!gameOver()}>
           <Index each={gameState.pieces}>
