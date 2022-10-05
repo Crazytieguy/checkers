@@ -1,12 +1,17 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Board from "../components/Board";
+import Turn from "../components/Turn";
 ---
 
-<Layout title="Welcome to Astro.">
+<Layout title="Play Checkers">
   <main
-    class="bg-gradient-to-br from-lime-50 to-lime-500 grid min-h-screen place-content-center"
+    class="bg-gradient-to-br from-lime-50 to-lime-500 min-h-screen grid justify-center content-start gap-4"
   >
+    <header>
+      <h1 class="text-4xl text-center">Play Checkers!</h1>
+    </header>
     <Board client:only="solid-js" />
+    <Turn client:idle />
   </main>
 </Layout>
