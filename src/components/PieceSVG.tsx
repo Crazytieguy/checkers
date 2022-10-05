@@ -1,23 +1,27 @@
 export default function PieceSVG(props: {
   color: string;
-  animate: boolean;
   col: number;
   row: number;
-  transX: number;
-  transY: number;
+  hasValidMove: boolean;
+  movement: { x: number; y: number };
 }) {
+  const transX = () => (props.hasValidMove ? props.movement.x : 0),
+    transY = () => (props.hasValidMove ? props.movement.y : 0);
+  const movementIsZero = () => props.movement.x === 0 && props.movement.y === 0;
   return (
     <svg
       classList={{
-        "transition-transform": props.animate,
-        "duration-75": props.animate,
+        "transition-transform": movementIsZero(),
+        "duration-75": movementIsZero(),
+        "drop-shadow-[0_0_1.5px_yellow]":
+          props.hasValidMove && movementIsZero(),
       }}
       class="absolute"
       style={{
         "grid-column": `${props.col} / ${props.col}`,
         "grid-row": `${props.row} / ${props.row}`,
         "touch-action": "none",
-        transform: `translate(${props.transX}px, ${props.transY}px)`,
+        transform: `translate(${transX()}px, ${transY()}px)`,
       }}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"

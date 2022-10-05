@@ -1,39 +1,33 @@
 import { DragGesture } from "@use-gesture/vanilla";
 import { onCleanup } from "solid-js";
 import { createStore } from "solid-js/store";
-import {
-  gameState,
-  getPlayTurn,
-  idxToPosition,
-  playerSide,
-} from "../logic/game";
+import { idxToPosition, newGame, playerSide } from "../logic/game";
 import { setDragXY } from "../logic/ui";
 import PieceSVG from "./PieceSVG";
 
 export default function Piece(props: {
   side: playerSide;
   idx: number;
-  playTurn: ReturnType<typeof getPlayTurn>;
+  hasValidMove: boolean;
+  playTurn: ReturnType<typeof newGame>["playTurn"];
 }) {
   const [movement, setMovement] = createStore({ x: 0, y: 0 });
-  const allowedToMove = () => props.side === gameState.turn;
   const pos = () => idxToPosition(props.idx);
 
   const piece = (
     <PieceSVG
       row={pos().row + 1}
       col={pos().col + 1}
-      animate={movement.x === 0 && movement.y === 0}
       color={props.side}
-      transX={allowedToMove() ? movement.x : 0}
-      transY={allowedToMove() ? movement.y : 0}
+      hasValidMove={props.hasValidMove}
+      movement={movement}
     />
   ) as SVGElement;
 
   const gesture = new DragGesture(
     piece,
     ({ active, movement: [mx, my], xy: [x, y], cancel }) => {
-      if (!allowedToMove()) {
+      if (!props.hasValidMove) {
         cancel();
         return;
       }

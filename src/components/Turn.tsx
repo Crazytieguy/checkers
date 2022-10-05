@@ -1,17 +1,17 @@
-import { gameState } from "../logic/game";
+import type { playerSide } from "../logic/game";
 
-export default function Turn() {
+export default function Turn(props: { turn: playerSide }) {
   return (
     <h2 class="text-2xl">
       Turn:{" "}
       <span
         class="inline-block"
         classList={{
-          "text-red-600": gameState.turn === "red",
-          "text-black": gameState.turn === "black",
+          "text-red-600": props.turn === "red",
+          "text-black": props.turn === "black",
         }}
       >
-        {gameState.turn}
+        {props.turn}
       </span>
     </h2>
   );

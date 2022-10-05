@@ -1,7 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Board from "../components/Board";
-import Turn from "../components/Turn";
 ---
 
 <Layout title="Play Checkers">
@@ -12,6 +11,5 @@ import Turn from "../components/Turn";
       <h1 class="text-4xl text-center">Play Checkers!</h1>
     </header>
     <Board client:only="solid-js" />
-    <Turn client:idle />
   </main>
 </Layout>
