@@ -17,7 +17,7 @@ export default function Game() {
       classList={{ "opacity-0": !opaque() }}
     >
       <div
-        class="relative my-6 grid aspect-square grid-cols-8 place-content-stretch shadow-md shadow-black"
+        class="relative my-6 grid aspect-square grid-cols-8 place-content-stretch bg-gradient-to-br from-white to-black shadow-md shadow-black"
         style={{ height: "min(70vh, 70vw)" }}
       >
         {cells}

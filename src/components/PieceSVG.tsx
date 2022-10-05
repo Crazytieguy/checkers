@@ -1,5 +1,7 @@
+import type { playerSide } from "../logic/game";
+
 export default function PieceSVG(props: {
-  color: string;
+  side: playerSide;
   col: number;
   row: number;
   hasValidMove: boolean;
@@ -12,9 +14,9 @@ export default function PieceSVG(props: {
     <svg
       classList={{
         "transition-transform": movementIsZero(),
+        "transition-none": !movementIsZero(),
         "duration-75": movementIsZero(),
-        "drop-shadow-[0_0_1.5px_yellow]":
-          props.hasValidMove && movementIsZero(),
+        "drop-shadow-highlight": props.hasValidMove && movementIsZero(),
       }}
       class="absolute"
       style={{
@@ -27,7 +29,15 @@ export default function PieceSVG(props: {
       fill="none"
       viewBox="0 0 100 100"
     >
-      <circle cx="50" cy="50" r="45" fill={props.color} />
+      <circle
+        cx="50"
+        cy="50"
+        r="45"
+        classList={{
+          "fill-red": props.side === "red",
+          "fill-black": props.side === "black",
+        }}
+      />
       <circle
         fill="none"
         cx="50"

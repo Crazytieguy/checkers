@@ -13,10 +13,12 @@ export default function Cells() {
     return (
       <div
         ref={self!}
+        class="opacity-75"
         classList={{
-          "bg-green-300": isDraggedOver(),
-          "bg-zinc-200": !isDraggedOver() && rem === 0,
-          "bg-zinc-500": !isDraggedOver() && rem === 1,
+          "bg-blue-medium": isDraggedOver(),
+          "bg-grey-light": !isDraggedOver() && rem === 0,
+          "bg-grey-medium": !isDraggedOver() && rem === 1,
+          "dark:bg-grey-dark": !isDraggedOver() && rem === 0,
         }}
       />
     );

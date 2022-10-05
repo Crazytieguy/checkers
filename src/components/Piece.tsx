@@ -18,7 +18,7 @@ export default function Piece(props: {
     <PieceSVG
       row={pos().row + 1}
       col={pos().col + 1}
-      color={props.side}
+      side={props.side}
       hasValidMove={props.hasValidMove}
       movement={movement}
     />

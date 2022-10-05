@@ -7,11 +7,11 @@ export default function Turn(props: { turn: playerSide }) {
       <span
         class="inline-block"
         classList={{
-          "text-red-600": props.turn === "red",
+          "text-red": props.turn === "red",
           "text-black": props.turn === "black",
         }}
       >
-        {props.turn}
+        ⬤
       </span>
     </h2>
   );
