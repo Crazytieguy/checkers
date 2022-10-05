@@ -1,7 +1,12 @@
 import { DragGesture } from "@use-gesture/vanilla";
 import { onCleanup } from "solid-js";
 import { createStore } from "solid-js/store";
-import { gameState, getPlayTurn, playerSide } from "../logic/game";
+import {
+  gameState,
+  getPlayTurn,
+  idxToPosition,
+  playerSide,
+} from "../logic/game";
 import { setDragXY } from "../logic/ui";
 import PieceSVG from "./PieceSVG";
 
@@ -12,11 +17,12 @@ export default function Piece(props: {
 }) {
   const [movement, setMovement] = createStore({ x: 0, y: 0 });
   const allowedToMove = () => props.side === gameState.turn;
+  const pos = () => idxToPosition(props.idx);
 
   const piece = (
     <PieceSVG
-      row={Math.floor(props.idx / 8) + 1}
-      col={(props.idx % 8) + 1}
+      row={pos().row + 1}
+      col={pos().col + 1}
       animate={movement.x === 0 && movement.y === 0}
       color={props.side}
       transX={allowedToMove() ? movement.x : 0}
