@@ -1,18 +1,23 @@
-import { Index, Show } from "solid-js";
+import { createSignal, Index, Show } from "solid-js";
 import { newGame, other } from "../logic/game";
 import Cells from "./Cells";
 import Piece from "./Piece";
 import Turn from "./Turn";
 import WinnerDialog from "./WinnerDialog";
 
-export default function Board() {
+export default function Game() {
   const cells = (<Cells />) as HTMLDivElement[];
+  const [opaque, setOpaque] = createSignal(false);
+  setTimeout(() => setOpaque(true));
   const { playTurn, gameState, allValidMoves, gameOver, restartGame } =
     newGame(cells);
   return (
-    <>
+    <div
+      class="transition-opacity duration-1000"
+      classList={{ "opacity-0": !opaque() }}
+    >
       <div
-        class="relative grid aspect-square grid-cols-8 place-content-stretch shadow-md shadow-black"
+        class="relative my-6 grid aspect-square grid-cols-8 place-content-stretch shadow-md shadow-black"
         style={{ height: "min(70vh, 70vw)" }}
       >
         {cells}
@@ -37,6 +42,6 @@ export default function Board() {
         gameOver={gameOver()}
         restartGame={restartGame}
       />
-    </>
+    </div>
   );
 }

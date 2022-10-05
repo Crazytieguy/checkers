@@ -1,12 +1,12 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Board from "../components/Board";
+import Game from "../components/Game";
 import Github from "../components/Github.astro";
 ---
 
 <Layout title="Play Checkers">
   <main
-    class="bg-gradient-to-br from-lime-50 to-lime-500 min-h-screen grid justify-center content-start gap-4"
+    class="bg-gradient-to-br from-lime-50 to-lime-500 min-h-screen grid justify-center content-start"
   >
     <style>
       header {
@@ -19,6 +19,6 @@ import Github from "../components/Github.astro";
         <Github />
       </a>
     </header>
-    <Board client:only="solid-js" />
+    <Game client:only="solid-js" />
   </main>
 </Layout>
