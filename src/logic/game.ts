@@ -88,7 +88,7 @@ function getAllValidMoves(gameState: GameStateType) {
   const piecesArray = Object.values(gameState.pieces);
   piecesArray.forEach((p) => (idxToPiece[positionToIdx(p.pos)] = p));
   const validations = piecesArray.flatMap((piece) => {
-    if (!piece) return [];
+    if (!piece.show) return [];
     const rowDirection = piece.side === "red" ? -1 : 1;
     const { row, col } = piece.pos;
     return [
@@ -130,6 +130,8 @@ function validateMove({
   turn: PlayerSide;
   idxToPiece: (PieceState | undefined)[];
 }): Validation | undefined {
+  // TODO: FIX everything
+
   const fromIdx = positionToIdx(fromPiece.pos);
   const toIdx = positionToIdx(toPos);
 
@@ -178,7 +180,7 @@ function validateMove({
     ];
 
   // no piece to eat
-  if (eat?.side !== other(from.piece.side)) return;
+  if (!eat?.show || eat?.side !== other(from.piece.side)) return;
 
   return { valid: true, fromPiece, toPos, eat };
 }
