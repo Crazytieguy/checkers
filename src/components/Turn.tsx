@@ -1,6 +1,6 @@
-import type { playerSide } from "../logic/game";
+import type { PlayerSide } from "../logic/game";
 
-export default function Turn(props: { turn: playerSide }) {
+export default function Turn(props: { turn: PlayerSide }) {
   return (
     <h2 class="text-2xl">
       Turn:{" "}

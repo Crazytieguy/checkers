@@ -1,8 +1,4 @@
 /* for theme toggle */
-* {
-  transition: color background background-image;
-  transition-duration: 500ms;
-}
 
 .theme-toggle {
   --size: 1em;

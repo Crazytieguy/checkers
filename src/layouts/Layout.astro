@@ -28,7 +28,9 @@ const { title } = Astro.props;
     </script>
     <title>{title}</title>
   </head>
-  <body>
+  <body
+    class="bg-gradient-to-br from-blue-light to-blue-medium dark:text-grey-light before:absolute before:inset-0 relative before:bg-gradient-to-br before:from-blue-medium before:to-blue-dark before:opacity-0 before:dark:opacity-100 z-0 before:-z-10 transition-colors duration-1000 before:transition-opacity before:duration-1000"
+  >
     <slot />
   </body>
 </html>

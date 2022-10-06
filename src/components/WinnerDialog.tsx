@@ -1,8 +1,8 @@
 import { createEffect } from "solid-js";
-import type { playerSide } from "../logic/game";
+import type { PlayerSide } from "../logic/game";
 
 export default function WinnerDialog(props: {
-  winner: playerSide;
+  winner: PlayerSide;
   gameOver: boolean;
   restartGame: () => void;
 }) {

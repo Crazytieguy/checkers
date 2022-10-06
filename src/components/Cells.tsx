@@ -13,7 +13,7 @@ export default function Cells() {
     return (
       <div
         ref={self!}
-        class="opacity-75"
+        class="opacity-75 transition-colors duration-1000"
         classList={{
           "bg-blue-medium": isDraggedOver(),
           "bg-grey-light": !isDraggedOver() && rem === 0,
