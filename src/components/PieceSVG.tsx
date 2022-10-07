@@ -35,11 +35,10 @@ export default function PieceSVG(props: {
         }}
       />
       <circle
-        fill="none"
         cx="50"
         cy="50"
         r="33"
-        class="stroke-grey-light stroke-2"
+        class="fill-[none] stroke-grey-light stroke-2"
       />
       <Show when={props.piece.isKing}>
         <polyline
@@ -52,8 +51,7 @@ export default function PieceSVG(props: {
         73 40
         70 63
         30 63"
-          class="stroke-grey-light stroke-2"
-          fill="none"
+          class="fill-[none] stroke-grey-light stroke-2"
         />
       </Show>
     </svg>
