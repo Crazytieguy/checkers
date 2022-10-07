@@ -20,6 +20,7 @@ export type PieceState = {
 
 type GameStateType = {
   turn: PlayerSide;
+  inChainPieceId: number | null;
   pieces: PieceState[];
 };
 
@@ -32,6 +33,7 @@ function initialState(): GameStateType {
   }).flat();
   return {
     turn: "black",
+    inChainPieceId: null,
     pieces: Array.from({ length: 24 }, (_, id) => ({
       side: id < 12 ? "red" : "black",
       position: pieceNumberToPos[id]!,
@@ -84,8 +86,14 @@ export function newGame() {
       }
       if (validation.eat !== undefined) {
         setGameState("pieces", validation.eat.id, "isInPlay", false);
+        setGameState("inChainPieceId", fromPiece.id);
+        if (allValidMoves().length === 0) {
+          setGameState("inChainPieceId", null);
+          setGameState("turn", other);
+        }
+      } else {
+        setGameState("turn", other);
       }
-      setGameState("turn", other);
     });
   };
   return { gameState, gameOver, restartGame, playTurn };
@@ -109,7 +117,12 @@ function getAllValidMoves(gameState: GameStateType) {
   const idxToPiece: (PieceState | undefined)[] = new Array(64);
   const piecesArray = gameState.pieces.filter((p) => p.isInPlay);
   piecesArray.forEach((p) => (idxToPiece[positionToIdx(p.position)] = p));
-  const validations = piecesArray.flatMap((piece) => {
+  const inChainPiece =
+    gameState.inChainPieceId === null
+      ? undefined
+      : gameState.pieces[gameState.inChainPieceId];
+  const toCheck = inChainPiece ? [inChainPiece] : piecesArray;
+  const validations = toCheck.flatMap((piece) => {
     const rowDirection = piece.side === "red" ? 1 : -1;
     const multipliers = piece.isKing ? [1, 2, -1, -2] : [1, 2];
     const possibleMoves = multipliers.flatMap((dist) =>
@@ -130,7 +143,7 @@ function getAllValidMoves(gameState: GameStateType) {
     });
   });
   const eats = validations.filter((v) => v.eat);
-  if (eats.length > 0) return eats;
+  if (inChainPiece || eats.length > 0) return eats;
   return validations;
 }
 
