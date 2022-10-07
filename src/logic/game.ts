@@ -23,28 +23,23 @@ type GameStateType = {
   pieces: PieceState[];
 };
 
-const pieceNumberToPos = Array.from({ length: 64 }, (_, idx) => {
-  const { rem, row, col } = idxToPosition(idx);
-  if (rem === 1 && row < 3) return [{ row, col }];
-  if (rem === 1 && row > 4) return [{ row, col }];
-  return [];
-}).flat();
-
 function initialState(): GameStateType {
+  const pieceNumberToPos = Array.from({ length: 64 }, (_, idx) => {
+    const { rem, row, col } = idxToPosition(idx);
+    if (rem === 1 && row < 3) return [{ row, col }];
+    if (rem === 1 && row > 4) return [{ row, col }];
+    return [];
+  }).flat();
   return {
     turn: "black",
-    pieces: Array.from({ length: 24 }, (_, id) => {
-      const position = pieceNumberToPos[id]!;
-      const base = {
-        position,
-        isKing: false,
-        isInPlay: true,
-        id,
-      };
-      if (id < 8) return { side: "black", hasValidMove: false, ...base };
-      if (id < 12) return { side: "black", hasValidMove: true, ...base };
-      return { side: "red", hasValidMove: false, ...base };
-    }),
+    pieces: Array.from({ length: 24 }, (_, id) => ({
+      side: id < 12 ? "red" : "black",
+      position: pieceNumberToPos[id]!,
+      isKing: false,
+      isInPlay: true,
+      hasValidMove: false,
+      id,
+    })),
   };
 }
 
@@ -52,10 +47,7 @@ export function newGame() {
   const [gameState, setGameState] = createStore<GameStateType>(initialState());
   const allValidMoves = createMemo(() => getAllValidMoves(gameState));
   const gameOver = () => allValidMoves().length === 0;
-  const restartGame = () => {
-    console.log("restarting");
-    setGameState(initialState());
-  };
+  const restartGame = () => setGameState(initialState());
 
   createEffect(() => {
     batch(() => {
@@ -85,8 +77,8 @@ export function newGame() {
     batch(() => {
       setGameState("pieces", fromPiece.id, "position", validation.toPos);
       if (
-        (fromPiece.side === "red" && validation.toPos.row === 0) ||
-        (fromPiece.side === "black" && validation.toPos.row === 7)
+        (fromPiece.side === "black" && validation.toPos.row === 0) ||
+        (fromPiece.side === "red" && validation.toPos.row === 7)
       ) {
         setGameState("pieces", fromPiece.id, "isKing", true);
       }
@@ -113,23 +105,12 @@ export function positionToIdx({ row, col }: { row: number; col: number }) {
 
 export const other = (p: PlayerSide) => (p === "red" ? "black" : "red");
 
-/* 
-    const rowDirection = piece.side === "red" ? 1 : -1;
-    const multipliers = piece.isKing ? [1, 2, -1, -2] : [1, 2];
-    const possibleMoves = multipliers.flatMap((dist) =>
-      [1, -1].map((colDirection) => ({
-        row: piece.position.row + rowDirection * dist,
-        col: piece.position.col + colDirection * dist,
-      }))
-    );
-*/
-
 function getAllValidMoves(gameState: GameStateType) {
   const idxToPiece: (PieceState | undefined)[] = new Array(64);
   const piecesArray = gameState.pieces.filter((p) => p.isInPlay);
   piecesArray.forEach((p) => (idxToPiece[positionToIdx(p.position)] = p));
   const validations = piecesArray.flatMap((piece) => {
-    const rowDirection = piece.side === "red" ? -1 : 1;
+    const rowDirection = piece.side === "red" ? 1 : -1;
     const multipliers = piece.isKing ? [1, 2, -1, -2] : [1, 2];
     const possibleMoves = multipliers.flatMap((dist) =>
       [1, -1].map((colDirection) => ({
@@ -191,8 +172,8 @@ function validateMove({
 
   // only move forward
   if (!fromPiece.isKing) {
-    if (fromPiece.side === "red" && rowDiff >= 0) return;
-    if (fromPiece.side === "black" && rowDiff <= 0) return;
+    if (fromPiece.side === "black" && rowDiff >= 0) return;
+    if (fromPiece.side === "red" && rowDiff <= 0) return;
   }
 
   const colDiff = toPos.col - fromPiece.position.col;
