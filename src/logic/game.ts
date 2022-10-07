@@ -85,10 +85,9 @@ export const other = (p: PlayerSide) => (p === "red" ? "black" : "red");
 
 function getAllValidMoves(gameState: GameStateType) {
   const idxToPiece: (PieceState | undefined)[] = new Array(64);
-  const piecesArray = Object.values(gameState.pieces);
+  const piecesArray = Object.values(gameState.pieces).filter((p) => p.show);
   piecesArray.forEach((p) => (idxToPiece[positionToIdx(p.pos)] = p));
   const validations = piecesArray.flatMap((piece) => {
-    if (!piece.show) return [];
     const rowDirection = piece.side === "red" ? -1 : 1;
     const { row, col } = piece.pos;
     return [
@@ -130,8 +129,6 @@ function validateMove({
   turn: PlayerSide;
   idxToPiece: (PieceState | undefined)[];
 }): Validation | undefined {
-  // TODO: FIX everything
-
   const fromIdx = positionToIdx(fromPiece.pos);
   const toIdx = positionToIdx(toPos);
 
@@ -139,26 +136,22 @@ function validateMove({
   if (fromIdx === toIdx) return;
   if (toIdx === -1) return;
 
-  const to = idxToPosition(toIdx);
-
   // only black squares allowed
-  if (to.rem === 0) return;
+  if (toPos.rem === 0) return;
 
   // can't land on a piece
   if (idxToPiece[toIdx]) return;
 
-  const from = { ...idxToPosition(fromIdx), piece: idxToPiece[fromIdx] };
-
   // check turn
-  if (from.piece?.side !== turn) return;
+  if (fromPiece?.side !== turn) return;
 
-  const rowDiff = to.row - from.row;
+  const rowDiff = toPos.row - fromPiece.pos.row;
 
   // only move forward
-  if (from.piece.side === "red" && rowDiff >= 0) return;
-  if (from.piece.side === "black" && rowDiff <= 0) return;
+  if (fromPiece.side === "red" && rowDiff >= 0) return;
+  if (fromPiece.side === "black" && rowDiff <= 0) return;
 
-  const colDiff = to.col - from.col;
+  const colDiff = toPos.col - fromPiece.pos.col;
 
   // only move diagonally
   if (Math.abs(rowDiff) !== Math.abs(colDiff)) return;
@@ -174,13 +167,13 @@ function validateMove({
   const eat =
     idxToPiece[
       positionToIdx({
-        row: from.row + rowDiff / 2,
-        col: from.col + colDiff / 2,
+        row: fromPiece.pos.row + rowDiff / 2,
+        col: fromPiece.pos.col + colDiff / 2,
       })
     ];
 
   // no piece to eat
-  if (!eat?.show || eat?.side !== other(from.piece.side)) return;
+  if (eat?.side !== other(fromPiece.side)) return;
 
   return { valid: true, fromPiece, toPos, eat };
 }
