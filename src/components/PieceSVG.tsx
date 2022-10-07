@@ -12,7 +12,7 @@ export default function PieceSVG(props: {
         "drop-shadow-highlight": props.piece.hasValidMove && movementIsZero(),
         "z-10": !movementIsZero(),
       }}
-      class="absolute"
+      class="absolute touch-none"
       style={{
         "grid-column": `${props.piece.position.col + 1} / ${
           props.piece.position.col + 1
@@ -20,7 +20,6 @@ export default function PieceSVG(props: {
         "grid-row": `${props.piece.position.row + 1} / ${
           props.piece.position.row + 1
         }`,
-        "touch-action": "none",
         transform: `translate(${props.movement.x}px, ${props.movement.y}px)`,
       }}
       xmlns="http://www.w3.org/2000/svg"
