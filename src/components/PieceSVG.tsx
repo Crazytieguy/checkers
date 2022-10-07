@@ -56,6 +56,7 @@ export default function PieceSVG(props: {
         70 63
         30 63"
           class="stroke-grey-light stroke-2"
+          fill="none"
         />
       </Show>
     </svg>

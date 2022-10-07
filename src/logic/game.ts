@@ -60,6 +60,12 @@ export function newGame(cells: HTMLDivElement[]) {
     if (!validation?.valid) return;
     batch(() => {
       setGameState("pieces", fromPiece.id, "pos", validation.toPos);
+      if (
+        (fromPiece.side === "red" && validation.toPos.row === 0) ||
+        (fromPiece.side === "black" && validation.toPos.row === 7)
+      ) {
+        setGameState("pieces", fromPiece.id, "isKing", true);
+      }
       if (validation.eat !== undefined) {
         setGameState("pieces", validation.eat.id, "show", false);
       }
@@ -88,14 +94,25 @@ function getAllValidMoves(gameState: GameStateType) {
   const piecesArray = Object.values(gameState.pieces).filter((p) => p.show);
   piecesArray.forEach((p) => (idxToPiece[positionToIdx(p.pos)] = p));
   const validations = piecesArray.flatMap((piece) => {
-    const rowDirection = piece.side === "red" ? -1 : 1;
     const { row, col } = piece.pos;
-    return [
+    let rowDirection = piece.side === "red" ? -1 : 1;
+    let possibleMoves = [
       { row: row + rowDirection, col: col + 1 },
       { row: row + rowDirection, col: col - 1 },
       { row: row + rowDirection * 2, col: col + 2 },
       { row: row + rowDirection * 2, col: col - 2 },
-    ].flatMap((pos) => {
+    ];
+    if (piece.isKing) {
+      rowDirection = -rowDirection;
+      possibleMoves = [
+        ...possibleMoves,
+        { row: row + rowDirection, col: col + 1 },
+        { row: row + rowDirection, col: col - 1 },
+        { row: row + rowDirection * 2, col: col + 2 },
+        { row: row + rowDirection * 2, col: col - 2 },
+      ];
+    }
+    return possibleMoves.flatMap((pos) => {
       const v = validateMove({
         fromPiece: piece,
         toPos: pos,
@@ -148,8 +165,10 @@ function validateMove({
   const rowDiff = toPos.row - fromPiece.pos.row;
 
   // only move forward
-  if (fromPiece.side === "red" && rowDiff >= 0) return;
-  if (fromPiece.side === "black" && rowDiff <= 0) return;
+  if (!fromPiece.isKing) {
+    if (fromPiece.side === "red" && rowDiff >= 0) return;
+    if (fromPiece.side === "black" && rowDiff <= 0) return;
+  }
 
   const colDiff = toPos.col - fromPiece.pos.col;
 
