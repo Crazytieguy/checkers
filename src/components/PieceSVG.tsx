@@ -3,25 +3,23 @@ import { Show } from "solid-js";
 
 export default function PieceSVG(props: {
   piece: PieceState;
-  hasValidMove: boolean;
   movement: { x: number; y: number };
 }) {
-  const movementIsZero = () => {
-    const isZero = props.movement.x === 0 && props.movement.y === 0;
-    console.log(`isZero: ${isZero}`);
-    return isZero;
-  };
+  const movementIsZero = () => props.movement.x === 0 && props.movement.y === 0;
   return (
     <svg
       classList={{
-        "drop-shadow-highlight": props.hasValidMove && movementIsZero(),
+        "drop-shadow-highlight": props.piece.hasValidMove && movementIsZero(),
+        "z-10": !movementIsZero(),
       }}
       class="absolute"
       style={{
-        "grid-column": `${props.piece.pos.col + 1} / ${
-          props.piece.pos.col + 1
+        "grid-column": `${props.piece.position.col + 1} / ${
+          props.piece.position.col + 1
         }`,
-        "grid-row": `${props.piece.pos.row + 1} / ${props.piece.pos.row + 1}`,
+        "grid-row": `${props.piece.position.row + 1} / ${
+          props.piece.position.row + 1
+        }`,
         "touch-action": "none",
         transform: `translate(${props.movement.x}px, ${props.movement.y}px)`,
       }}

@@ -1,30 +1,22 @@
 import { DragGesture } from "@use-gesture/vanilla";
 import { batch, createSignal, onCleanup, Show } from "solid-js";
-import type { newGame, PieceState, Validation } from "../logic/game";
+import type { newGame, PieceState } from "../logic/game";
 import { setDragXY } from "../logic/ui";
 import PieceSVG from "./PieceSVG";
 
-export default function Piece(props: {
-  piece: PieceState;
-  allValidMoves: Validation[];
-  playTurn: ReturnType<typeof newGame>["playTurn"];
-}) {
+export default function Piece(
+  props: PieceState & Pick<ReturnType<typeof newGame>, "playTurn">
+) {
   const [movement, setMovement] = createSignal({ x: 0, y: 0 });
-  const hasValidMove = () =>
-    props.allValidMoves.some((v) => v.fromPiece.id === props.piece.id);
 
   const piece = (
-    <PieceSVG
-      piece={props.piece}
-      hasValidMove={hasValidMove()}
-      movement={movement()}
-    />
+    <PieceSVG piece={props} movement={movement()} />
   ) as SVGElement;
 
   const gesture = new DragGesture(
     piece,
     ({ active, movement: [mx, my], xy: [x, y], cancel }) => {
-      if (!hasValidMove()) {
+      if (!props.hasValidMove) {
         cancel();
         return;
       }
@@ -36,8 +28,8 @@ export default function Piece(props: {
         return;
       }
       batch(() => {
-        props.playTurn(props.piece, { x, y });
-        setDragXY(undefined);
+        props.playTurn(props);
+        setDragXY();
         setMovement({ x: 0, y: 0 });
       });
     }
@@ -47,5 +39,5 @@ export default function Piece(props: {
     gesture.destroy();
   });
 
-  return <Show when={props.piece.show}>{piece}</Show>;
+  return <Show when={props.isInPlay}>{piece}</Show>;
 }
