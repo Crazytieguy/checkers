@@ -12,9 +12,8 @@ import ThemeToggle from "../components/ThemeToggle";
         width: min(75vh, 90vw);
       }
     </style>
-    <header class="sm:flex justify-between items-end text-4xl mt-4">
-      <h1 class="mx-auto text-center">Play Checkers!</h1>
-      <div class="flex justify-between gap-6 mt-2">
+    <header class="text-4xl mt-4">
+      <div class="flex justify-between gap-6 mb-2">
         <a
           href="https://github.com/Crazytieguy/checkers"
           target="_blank"
@@ -24,6 +23,7 @@ import ThemeToggle from "../components/ThemeToggle";
         </a>
         <ThemeToggle client:idle />
       </div>
+      <h1 class="mx-auto text-center">Play Checkers!</h1>
     </header>
     <Game client:only="solid-js" />
   </main>
