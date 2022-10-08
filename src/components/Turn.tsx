@@ -2,7 +2,7 @@ import type { PlayerSide } from "../logic/game";
 
 export default function Turn(props: { turn: PlayerSide }) {
   return (
-    <h2 class="text-2xl">
+    <h2>
       Turn:{" "}
       <span
         class="inline-block"

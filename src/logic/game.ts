@@ -1,5 +1,6 @@
 import { batch, createEffect, createMemo } from "solid-js";
 import { createStore } from "solid-js/store";
+import { ai, pickMove } from "./ai";
 import { hoveredCellIdx } from "./ui";
 
 export type PlayerSide = "red" | "black";
@@ -62,6 +63,20 @@ export function newGame() {
     });
   });
 
+  let aiTimeout: number;
+
+  createEffect(() => {
+    clearTimeout(aiTimeout);
+    if (gameState.turn === "red" && ai()) {
+      const move = pickMove(allValidMoves());
+      if (move !== undefined) {
+        setTimeout(() => playMove(move), 100);
+      } else {
+        console.error("AI was unable to pick a move");
+      }
+    }
+  });
+
   const playTurn = (fromPiece: PieceState) => {
     const hoveredCell = hoveredCellIdx();
     if (!hoveredCell) {
@@ -70,22 +85,25 @@ export function newGame() {
     }
     const selectedCellPos = idxToPosition(hoveredCell);
     // eslint-disable-next-line solid/reactivity
-    const validation = allValidMoves().find(
+    const move = allValidMoves().find(
       (v) =>
         v.fromPiece.id === fromPiece.id &&
         positionToIdx(v.toPos) === positionToIdx(selectedCellPos)
     );
-    if (!validation?.valid) return;
+    if (move) playMove(move);
+  };
+
+  const playMove = ({ fromPiece, toPos, eat }: ValidMove) => {
     batch(() => {
-      setGameState("pieces", fromPiece.id, "position", validation.toPos);
+      setGameState("pieces", fromPiece.id, "position", toPos);
       if (
-        (fromPiece.side === "black" && validation.toPos.row === 0) ||
-        (fromPiece.side === "red" && validation.toPos.row === 7)
+        (fromPiece.side === "black" && toPos.row === 0) ||
+        (fromPiece.side === "red" && toPos.row === 7)
       ) {
         setGameState("pieces", fromPiece.id, "isKing", true);
       }
-      if (validation.eat !== undefined) {
-        setGameState("pieces", validation.eat.id, "isInPlay", false);
+      if (eat !== undefined) {
+        setGameState("pieces", eat.id, "isInPlay", false);
         setGameState("inChainPieceId", fromPiece.id);
         if (allValidMoves().length === 0) {
           setGameState("inChainPieceId", null);
@@ -147,8 +165,8 @@ function getAllValidMoves(gameState: GameStateType) {
   return validations;
 }
 
-export type Validation = {
-  valid: boolean;
+export type ValidMove = {
+  valid: true;
   fromPiece: PieceState;
   toPos: Position;
   eat?: PieceState;
@@ -164,7 +182,7 @@ function validateMove({
   toPos: Position;
   turn: PlayerSide;
   idxToPiece: (PieceState | undefined)[];
-}): Validation | undefined {
+}): ValidMove | undefined {
   const fromIdx = positionToIdx(fromPiece.position);
   const toIdx = positionToIdx(toPos);
 

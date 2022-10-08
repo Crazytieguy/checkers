@@ -1,6 +1,7 @@
 import { createSignal, For, onMount } from "solid-js";
 import { newGame, other } from "../logic/game";
 import { initBoardBox } from "../logic/ui";
+import AISwitch from "./AISwitch";
 import Cells from "./Cells";
 import Piece from "./Piece";
 import Turn from "./Turn";
@@ -28,7 +29,10 @@ export default function Game() {
           {(piece) => <Piece {...piece} playTurn={playTurn} />}
         </For>
       </div>
-      <Turn turn={gameState.turn} />
+      <div class="flex justify-between text-2xl">
+        <Turn turn={gameState.turn} />
+        <AISwitch />
+      </div>
       <WinnerDialog
         winner={other(gameState.turn)}
         gameOver={gameOver()}
