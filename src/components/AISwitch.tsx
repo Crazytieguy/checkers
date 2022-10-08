@@ -8,7 +8,7 @@ export default function AISwitch() {
       <input
         ref={toggle!}
         type="checkbox"
-        class="relative h-[1em] w-[2em] appearance-none rounded-full bg-grey-medium transition-colors duration-200 after:absolute after:m-[0.1em] after:aspect-square after:h-[0.8em] after:rounded-full after:bg-grey-light after:transition-transform checked:bg-[#393] checked:after:translate-x-[1em] dark:after:bg-blue-medium"
+        class="relative h-[1em] w-[2em] appearance-none rounded-full bg-grey-medium transition-colors duration-200 after:absolute after:m-[0.1em] after:aspect-square after:h-[0.8em] after:rounded-full after:bg-grey-light after:transition-transform checked:bg-blue-light checked:after:translate-x-[1em]"
         onChange={() => setAI((v) => !v)}
         checked={ai()}
       />
