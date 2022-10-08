@@ -1,3 +1,7 @@
+html {
+  --board-size: min(75vh, 90vw);
+}
+
 /* for theme toggle */
 
 .theme-toggle {

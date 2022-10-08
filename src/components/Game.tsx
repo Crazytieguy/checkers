@@ -22,7 +22,7 @@ export default function Game() {
     <div classList={{ "opacity-0": !opaque() }}>
       <div
         ref={board!}
-        class="relative my-4 grid aspect-square h-[var(--board-size)] grid-cols-8 place-content-stretch bg-gradient-to-br from-white to-black shadow-md shadow-black"
+        class="relative my-4 grid aspect-square w-[var(--board-size)] grid-cols-8 place-content-stretch bg-gradient-to-br from-white to-black shadow-md shadow-black"
       >
         <Cells />
         <For each={gameState.pieces}>

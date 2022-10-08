@@ -12,14 +12,10 @@ export default function PieceSVG(props: {
         "drop-shadow-highlight": props.piece.hasValidMove && movementIsZero(),
         "z-10": !movementIsZero(),
       }}
-      class="absolute touch-none"
+      class="absolute aspect-square max-w-[calc(var(--board-size)/8)] touch-none"
       style={{
-        "grid-column": `${props.piece.position.col + 1} / ${
-          props.piece.position.col + 1
-        }`,
-        "grid-row": `${props.piece.position.row + 1} / ${
-          props.piece.position.row + 1
-        }`,
+        "grid-column": `${props.piece.position.col + 1} / span 1`,
+        "grid-row": `${props.piece.position.row + 1} / span 1`,
         transform: `translate(${props.movement.x}px, ${props.movement.y}px)`,
       }}
       xmlns="http://www.w3.org/2000/svg"
