@@ -1,12 +1,12 @@
 import { createSignal, For, onMount } from "solid-js";
-import { newGame, other } from "../logic/game";
-import { initBoardBox } from "../logic/ui";
-import Cells from "./Cells";
-import { ActionButtons } from "./ActionButtons";
-import Piece from "./Piece";
-import WinnerDialog from "./WinnerDialog";
+import { newGame, other } from "./logic/game";
+import { initBoardBox } from "./logic/ui";
+import Cells from "./components/Cells";
+import { ActionButtons } from "./components/ActionButtons";
+import Piece from "./components/Piece";
+import WinnerDialog from "./components/WinnerDialog";
 
-export default function Game() {
+export default function App() {
   let board: HTMLDivElement;
   const [opaque, setOpaque] = createSignal(false);
 

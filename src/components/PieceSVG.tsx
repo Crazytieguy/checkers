@@ -3,6 +3,7 @@ import { Show } from "solid-js";
 import { ai } from "../logic/ai";
 
 export default function PieceSVG(props: {
+  ref: SVGSVGElement;
   turn: PlayerSide;
   piece: PieceState;
   movement: { x: number; y: number };
@@ -10,6 +11,7 @@ export default function PieceSVG(props: {
   const movementIsZero = () => props.movement.x === 0 && props.movement.y === 0;
   return (
     <svg
+      ref={props.ref}
       classList={{
         "drop-shadow-highlight": props.piece.hasValidMove && movementIsZero(),
         "cursor-pointer": props.piece.hasValidMove,

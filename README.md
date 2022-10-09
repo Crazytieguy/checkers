@@ -1,5 +1,5 @@
 # A checkers browser game
 
-Written with [Astro](https://astro.build) and [SolidJS](https://www.solidjs.com/)
+Created with [SolidJS](https://www.solidjs.com/) and [TailwindCSS](https://tailwindcss.com/)
 
 ## [Play](https://crazytieguy.github.io/checkers/)
