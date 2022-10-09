@@ -1,5 +1,7 @@
-import { createEffect } from "solid-js";
+import { createEffect, onMount } from "solid-js";
 import type { PlayerSide } from "../logic/game";
+import dialogPolyfill from "dialog-polyfill";
+import "dialog-polyfill/dist/dialog-polyfill.css";
 
 export default function WinnerDialog(props: {
   winner: PlayerSide;
@@ -12,8 +14,11 @@ export default function WinnerDialog(props: {
       self.showModal();
     }
   });
+  onMount(() => dialogPolyfill.registerDialog(self));
   return (
     <dialog
+      // Pattern recommended by solid
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       ref={self!}
       class="rounded-2xl border border-black bg-blue-light dark:bg-grey-dark dark:text-grey-light"
     >
