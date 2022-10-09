@@ -57,19 +57,34 @@ export function newGame() {
   const [gameState, setGameState] = createStore<GameStateType>(initialState());
   const allValidMoves = createMemo(() => getAllValidMoves(gameState));
   const gameOver = () => allValidMoves().length === 0;
-  const undoStack: ReturnType<typeof getValidMoveMutators>["unDoMove"][] = [];
+  const undoStack: ReturnType<typeof getValidMoveMutators>[] = [];
+  const redoStack: ReturnType<typeof getValidMoveMutators>[] = [];
   const restartGame = () => {
     undoStack.length = 0;
+    redoStack.length = 0;
     setGameState(initialState());
   };
   const undo = () => {
     batch(() => {
       do {
-        const lastUndo = undoStack.pop();
-        if (!lastUndo) {
+        const lastMutators = undoStack.pop();
+        if (!lastMutators) {
           return;
         }
-        setGameState(produce(lastUndo));
+        redoStack.push(lastMutators);
+        setGameState(produce(lastMutators.unDoMove));
+      } while (ai() && gameState.turn === "red");
+    });
+  };
+  const redo = () => {
+    batch(() => {
+      do {
+        const lastMutators = redoStack.pop();
+        if (!lastMutators) {
+          return;
+        }
+        undoStack.push(lastMutators);
+        setGameState(produce(lastMutators.doMove));
       } while (ai() && gameState.turn === "red");
     });
   };
@@ -112,11 +127,11 @@ export function newGame() {
   };
 
   const playMove = (move: ValidMove) => {
-    const { doMove, unDoMove } = getValidMoveMutators(move, gameState);
-    undoStack.push(unDoMove);
-    setGameState(produce(doMove));
+    const mutators = getValidMoveMutators(move, gameState);
+    undoStack.push(mutators);
+    setGameState(produce(mutators.doMove));
   };
-  return { gameState, gameOver, restartGame, playTurn, undo };
+  return { gameState, gameOver, restartGame, playTurn, undo, redo };
 }
 
 function getValidMoveMutators(

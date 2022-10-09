@@ -1,5 +1,5 @@
 import { DragGesture } from "@use-gesture/vanilla";
-import { batch, createSignal, onCleanup, onMount, Show } from "solid-js";
+import { batch, createSignal, Show } from "solid-js";
 import type { newGame, PieceState, PlayerSide } from "../logic/game";
 import { setDragXY } from "../logic/ui";
 import PieceSVG from "./PieceSVG";
@@ -11,12 +11,9 @@ export default function Piece(props: {
 }) {
   const [movement, setMovement] = createSignal({ x: 0, y: 0 });
 
-  let piece: SVGSVGElement;
-  let gesture: DragGesture;
-
-  onMount(() => {
-    gesture = new DragGesture(
-      piece,
+  const makeDragGesture = (ref: EventTarget) =>
+    new DragGesture(
+      ref,
       ({ active, movement: [mx, my], xy: [x, y], cancel }) => {
         if (!props.piece.hasValidMove) {
           cancel();
@@ -36,19 +33,12 @@ export default function Piece(props: {
         });
       }
     );
-  });
-
-  onCleanup(() => {
-    gesture.destroy();
-  });
 
   return (
     <Show when={props.piece.isInPlay}>
       <PieceSVG
-        // Recommended solid pattern
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        ref={piece!}
         piece={props.piece}
+        makeDragGesture={makeDragGesture}
         turn={props.turn}
         movement={movement()}
       />

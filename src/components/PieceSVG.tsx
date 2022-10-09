@@ -1,17 +1,25 @@
 import type { PieceState, PlayerSide } from "../logic/game";
-import { Show } from "solid-js";
+import { onCleanup, onMount, Show } from "solid-js";
 import { ai } from "../logic/ai";
+import { DragGesture } from "@use-gesture/vanilla";
 
 export default function PieceSVG(props: {
-  ref: SVGSVGElement;
+  makeDragGesture: (ref: EventTarget) => DragGesture;
   turn: PlayerSide;
   piece: PieceState;
   movement: { x: number; y: number };
 }) {
   const movementIsZero = () => props.movement.x === 0 && props.movement.y === 0;
+  let ref: SVGSVGElement;
+  let gesture: DragGesture;
+  onMount(() => {
+    gesture = props.makeDragGesture(ref);
+  });
+  onCleanup(() => gesture.destroy());
   return (
     <svg
-      ref={props.ref}
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      ref={ref!}
       classList={{
         "drop-shadow-highlight": props.piece.hasValidMove && movementIsZero(),
         "cursor-pointer": props.piece.hasValidMove,

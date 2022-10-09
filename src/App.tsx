@@ -15,7 +15,7 @@ export default function App() {
     setOpaque(true);
   });
 
-  const { gameState, gameOver, restartGame, playTurn, undo } = newGame();
+  const { gameState, gameOver, restartGame, playTurn, undo, redo } = newGame();
 
   return (
     <div
@@ -35,7 +35,7 @@ export default function App() {
           )}
         </For>
       </div>
-      <ActionButtons undo={undo} />
+      <ActionButtons undo={undo} redo={redo} />
       <WinnerDialog
         winner={other(gameState.turn)}
         gameOver={gameOver()}

@@ -1,6 +1,6 @@
 import { ai, setAI } from "../logic/ai";
 
-export function ActionButtons(props: { undo: () => void }) {
+export function ActionButtons(props: { undo: () => void; redo: () => void }) {
   return (
     <div class="mt-6 grid justify-start gap-4 text-2xl sm:grid-flow-col sm:justify-between">
       <button
@@ -8,6 +8,12 @@ export function ActionButtons(props: { undo: () => void }) {
         onClick={() => props.undo()}
       >
         Undo
+      </button>
+      <button
+        class="w-24 rounded-md border border-blue-dark bg-grey-medium py-2 text-black transition-transform duration-150 active:scale-95"
+        onClick={() => props.redo()}
+      >
+        Redo
       </button>
       <button
         class="w-24 rounded-md border border-blue-dark py-2 transition duration-150 active:scale-95"
