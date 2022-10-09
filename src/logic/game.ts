@@ -73,6 +73,9 @@ export function newGame() {
       } while (ai() && gameState.turn === "red");
     });
   };
+  document.onkeydown = (e) => {
+    if (e.ctrlKey && e.key === "z") undo();
+  };
 
   createEffect(() => {
     batch(() => {
@@ -91,7 +94,7 @@ export function newGame() {
     if (gameState.turn === "red" && ai()) {
       const move = pickMove(allValidMoves());
       if (move !== undefined) {
-        setTimeout(() => playMove(move), 100);
+        setTimeout(() => playMove(move), 300);
       } else {
         console.error("AI was unable to pick a move");
       }

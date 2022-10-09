@@ -1,8 +1,8 @@
 import { createSignal, For, onMount } from "solid-js";
 import { newGame, other } from "../logic/game";
 import { initBoardBox } from "../logic/ui";
-import AISwitch from "./AISwitch";
 import Cells from "./Cells";
+import { ActionButtons } from "./ActionButtons";
 import Piece from "./Piece";
 import WinnerDialog from "./WinnerDialog";
 
@@ -18,7 +18,10 @@ export default function Game() {
   const { gameState, gameOver, restartGame, playTurn, undo } = newGame();
 
   return (
-    <div classList={{ "opacity-0": !opaque() }}>
+    <div
+      classList={{ "opacity-0": !opaque() }}
+      class="transition-opacity duration-1000"
+    >
       <div
         // pattern is recommended by solid
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -32,16 +35,7 @@ export default function Game() {
           )}
         </For>
       </div>
-      <div class="flex justify-between text-2xl">
-        <button
-          class="rounded-md bg-grey-light px-2 text-black active:scale-95 dark:bg-blue-light"
-          style={{ transition: "background-color 1s, transform 150ms" }}
-          onClick={undo}
-        >
-          Undo
-        </button>
-        <AISwitch />
-      </div>
+      <ActionButtons undo={undo} />
       <WinnerDialog
         winner={other(gameState.turn)}
         gameOver={gameOver()}

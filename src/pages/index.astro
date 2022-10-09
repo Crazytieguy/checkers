@@ -6,19 +6,22 @@ import ThemeToggle from "../components/ThemeToggle";
 ---
 
 <Layout title="Play Checkers">
-  <main class="min-h-screen grid justify-center content-start">
-    <header class="text-4xl mt-4 w-[var(--board-size)]">
-      <div class="flex justify-between gap-6 mb-2">
+  <main class="min-h-screen grid justify-center place-content-start">
+    <header
+      class="text-4xl mt-5 w-[var(--board-size)] sm:flex justify-between items-center"
+    >
+      <div class="flex justify-between order-2">
         <a
           href="https://github.com/Crazytieguy/checkers"
           target="_blank"
           title="Github repo"
+          class="mr-4"
         >
           <Github />
         </a>
         <ThemeToggle client:idle />
       </div>
-      <h1 class="mx-auto text-center">Play Checkers!</h1>
+      <h1 class="text-center order-1 mt-3 sm:mt-0">Play Checkers!</h1>
     </header>
     <Game client:only="solid-js" />
   </main>
