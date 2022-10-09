@@ -12,10 +12,11 @@ export default function PieceSVG(props: {
     <svg
       classList={{
         "drop-shadow-highlight": props.piece.hasValidMove && movementIsZero(),
+        "cursor-pointer": props.piece.hasValidMove,
         "z-10": !movementIsZero(),
         "opacity-80": !ai() && props.turn !== props.piece.side,
       }}
-      class="absolute aspect-square max-w-[calc(var(--board-size)/8)] touch-none transition-opacity duration-300"
+      class="absolute max-w-[calc(var(--board-size)/8)] touch-none transition-opacity duration-300"
       style={{
         "grid-column": `${props.piece.position.col + 1} / span 1`,
         "grid-row": `${props.piece.position.row + 1} / span 1`,

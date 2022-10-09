@@ -23,7 +23,7 @@ export default function Game() {
         // pattern is recommended by solid
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         ref={board!}
-        class="relative my-4 grid aspect-square w-[var(--board-size)] grid-cols-8 place-content-stretch bg-gradient-to-br from-white to-black shadow-md shadow-black"
+        class="relative my-4 grid h-[var(--board-size)] w-[var(--board-size)] grid-cols-8 place-content-stretch bg-gradient-to-br from-white to-black shadow-md shadow-black"
       >
         <Cells />
         <For each={gameState.pieces}>
