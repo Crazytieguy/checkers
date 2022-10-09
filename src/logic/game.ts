@@ -1,5 +1,5 @@
 import { batch, createEffect, createMemo } from "solid-js";
-import { createStore } from "solid-js/store";
+import { createStore, produce } from "solid-js/store";
 import { ai, pickMove } from "./ai";
 import { hoveredCellIdx } from "./ui";
 
@@ -7,7 +7,6 @@ export type PlayerSide = "red" | "black";
 type Position = {
   row: number;
   col: number;
-  rem?: number;
 };
 
 export type PieceState = {
@@ -19,29 +18,37 @@ export type PieceState = {
   hasValidMove: boolean;
 };
 
-type GameStateType = {
+export type GameStateType = {
   turn: PlayerSide;
   inChainPieceId: number | null;
   pieces: PieceState[];
 };
 
+export function playSquare({ row, col }: Position) {
+  return (row + col) % 2 === 1;
+}
+
+function idToInitialPosition(id: number) {
+  const row = Math.floor(id / 4) + (id < 12 ? 0 : 2);
+  const col = ((id * 2) % 8) + (row % 2 === 0 ? 1 : 0);
+  return { row, col };
+}
+
 function initialState(): GameStateType {
-  const pieceNumberToPos = Array.from({ length: 64 }, (_, idx) => {
-    const { rem, row, col } = idxToPosition(idx);
-    if (rem === 1 && row < 3) return [{ row, col }];
-    if (rem === 1 && row > 4) return [{ row, col }];
-    return [];
-  }).flat();
   return {
     turn: "black",
     inChainPieceId: null,
     pieces: Array.from({ length: 24 }, (_, id) => ({
-      side: id < 12 ? "red" : "black",
-      position: pieceNumberToPos[id]!,
+      get side() {
+        return id < 12 ? "red" : "black";
+      },
+      position: idToInitialPosition(id),
       isKing: false,
       isInPlay: true,
       hasValidMove: false,
-      id,
+      get id() {
+        return id;
+      },
     })),
   };
 }
@@ -50,12 +57,26 @@ export function newGame() {
   const [gameState, setGameState] = createStore<GameStateType>(initialState());
   const allValidMoves = createMemo(() => getAllValidMoves(gameState));
   const gameOver = () => allValidMoves().length === 0;
-  const restartGame = () => setGameState(initialState());
+  const undoStack: ReturnType<typeof getValidMoveMutators>["unDoMove"][] = [];
+  const restartGame = () => {
+    undoStack.length = 0;
+    setGameState(initialState());
+  };
+  const undo = () => {
+    batch(() => {
+      do {
+        const lastUndo = undoStack.pop();
+        if (!lastUndo) {
+          return;
+        }
+        setGameState(produce(lastUndo));
+      } while (ai() && gameState.turn === "red");
+    });
+  };
 
   createEffect(() => {
     batch(() => {
       const haveValidMoves = Array.from({ length: 24 }, () => false);
-      // eslint-disable-next-line solid/reactivity
       allValidMoves().forEach((v) => (haveValidMoves[v.fromPiece.id] = true));
       haveValidMoves.forEach((hasValidMove, id) => {
         setGameState("pieces", id, "hasValidMove", hasValidMove);
@@ -79,49 +100,85 @@ export function newGame() {
 
   const playTurn = (fromPiece: PieceState) => {
     const hoveredCell = hoveredCellIdx();
-    if (!hoveredCell) {
-      console.error("Play turn without a hovered cell");
-      return;
-    }
-    const selectedCellPos = idxToPosition(hoveredCell);
-    // eslint-disable-next-line solid/reactivity
     const move = allValidMoves().find(
       (v) =>
         v.fromPiece.id === fromPiece.id &&
-        positionToIdx(v.toPos) === positionToIdx(selectedCellPos)
+        positionToIdx(v.toPos) === hoveredCell
     );
     if (move) playMove(move);
   };
 
-  const playMove = ({ fromPiece, toPos, eat }: ValidMove) => {
-    batch(() => {
-      setGameState("pieces", fromPiece.id, "position", toPos);
-      if (
-        (fromPiece.side === "black" && toPos.row === 0) ||
-        (fromPiece.side === "red" && toPos.row === 7)
-      ) {
-        setGameState("pieces", fromPiece.id, "isKing", true);
-      }
-      if (eat !== undefined) {
-        setGameState("pieces", eat.id, "isInPlay", false);
-        setGameState("inChainPieceId", fromPiece.id);
-        if (allValidMoves().length === 0) {
-          setGameState("inChainPieceId", null);
-          setGameState("turn", other);
-        }
-      } else {
-        setGameState("turn", other);
-      }
-    });
+  const playMove = (move: ValidMove) => {
+    const { doMove, unDoMove } = getValidMoveMutators(move, gameState);
+    undoStack.push(unDoMove);
+    setGameState(produce(doMove));
   };
-  return { gameState, gameOver, restartGame, playTurn };
+  return { gameState, gameOver, restartGame, playTurn, undo };
 }
 
-export function idxToPosition(idx: number) {
-  const row = Math.floor(idx / 8);
-  const rem = (idx + row) % 2;
-  const col = idx % 8;
-  return { rem, row, col };
+function getValidMoveMutators(
+  { fromPiece, toPos, eat }: ValidMove,
+  currentState: GameStateType
+): {
+  doMove: (gameState: GameStateType) => void;
+  unDoMove: (gameState: GameStateType) => void;
+} {
+  const { row, col } = fromPiece.position;
+  const isKing = fromPiece.isKing;
+  const inChainPieceId = currentState.inChainPieceId;
+  const turn = currentState.turn;
+  const unDoMove = (gameState: GameStateType) => {
+    const piece = gameState.pieces[fromPiece.id];
+    if (!piece) {
+      console.error("piece id out of bounds", { fromPiece, gameState });
+      return;
+    }
+    piece.position = { row, col };
+    piece.isKing = isKing;
+    if (eat) {
+      const eatPiece = gameState.pieces[eat.id];
+      if (!eatPiece) {
+        console.error("eat id out of bounds", { eat, gameState });
+        return;
+      }
+      eatPiece.isInPlay = true;
+    }
+    gameState.inChainPieceId = inChainPieceId;
+    gameState.turn = turn;
+  };
+  const doMove = (gameState: GameStateType) => {
+    const piece = gameState.pieces[fromPiece.id];
+    if (!piece) {
+      console.error("piece id out of bounds", { fromPiece, gameState });
+      return;
+    }
+    piece.position = toPos;
+    if (
+      (fromPiece.side === "black" && toPos.row === 0) ||
+      (fromPiece.side === "red" && toPos.row === 7)
+    ) {
+      piece.isKing = true;
+    }
+    if (eat) {
+      const eatPiece = gameState.pieces[eat.id];
+      if (!eatPiece) {
+        console.error("eat id out of bounds", { eat, gameState });
+        return;
+      }
+      eatPiece.isInPlay = false;
+      gameState.inChainPieceId = fromPiece.id;
+      if (getAllValidMoves(gameState).length === 0) {
+        gameState.inChainPieceId = null;
+        gameState.turn = other(gameState.turn);
+      }
+    } else {
+      gameState.turn = other(gameState.turn);
+    }
+  };
+  return {
+    doMove,
+    unDoMove,
+  };
 }
 
 export function positionToIdx({ row, col }: { row: number; col: number }) {
@@ -166,7 +223,6 @@ function getAllValidMoves(gameState: GameStateType) {
 }
 
 export type ValidMove = {
-  valid: true;
   fromPiece: PieceState;
   toPos: Position;
   eat?: PieceState;
@@ -191,7 +247,7 @@ function validateMove({
   if (toIdx === -1) return;
 
   // only black squares allowed
-  if (toPos.rem === 0) return;
+  if (!playSquare(toPos)) return;
 
   // can't land on a piece
   if (idxToPiece[toIdx]) return;
@@ -214,7 +270,7 @@ function validateMove({
 
   // moving 1 is legal
   if (Math.abs(rowDiff) === 1) {
-    return { valid: true, fromPiece, toPos };
+    return { fromPiece, toPos };
   }
 
   // don't move more than 2
@@ -231,5 +287,5 @@ function validateMove({
   // no piece to eat
   if (eat?.side !== other(fromPiece.side)) return;
 
-  return { valid: true, fromPiece, toPos, eat };
+  return { fromPiece, toPos, eat };
 }

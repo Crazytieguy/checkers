@@ -1,7 +1,8 @@
-import type { PieceState } from "../logic/game";
+import type { PieceState, PlayerSide } from "../logic/game";
 import { Show } from "solid-js";
 
 export default function PieceSVG(props: {
+  turn: PlayerSide;
   piece: PieceState;
   movement: { x: number; y: number };
 }) {
@@ -11,8 +12,9 @@ export default function PieceSVG(props: {
       classList={{
         "drop-shadow-highlight": props.piece.hasValidMove && movementIsZero(),
         "z-10": !movementIsZero(),
+        "opacity-90": props.turn !== props.piece.side,
       }}
-      class="absolute aspect-square max-w-[calc(var(--board-size)/8)] touch-none"
+      class="absolute aspect-square max-w-[calc(var(--board-size)/8)] touch-none transition-opacity"
       style={{
         "grid-column": `${props.piece.position.col + 1} / span 1`,
         "grid-row": `${props.piece.position.row + 1} / span 1`,
