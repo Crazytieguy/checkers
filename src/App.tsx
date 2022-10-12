@@ -1,6 +1,12 @@
-import { createSignal, For, onMount } from "solid-js";
-import { newGame, other } from "./logic/game";
-import { initBoardBox } from "./logic/ui";
+import { createMemo, createSignal, For, onMount } from "solid-js";
+import {
+  newGame,
+  other,
+  PieceState,
+  positionToIdx,
+  ValidMove,
+} from "./logic/game";
+import { cellIdxForXY } from "./logic/ui";
 import Cells from "./components/Cells";
 import { ActionButtons } from "./components/ActionButtons";
 import Piece from "./components/Piece";
@@ -8,14 +14,39 @@ import WinnerDialog from "./components/WinnerDialog";
 
 export default function App() {
   let board: HTMLDivElement;
-  const [opaque, setOpaque] = createSignal(false);
 
+  const { gameState, allValidMoves, restartGame, playMove, undo, redo } =
+    newGame();
+  const gameOver = () => allValidMoves().length === 0;
+  const validMovesByPieceId = createMemo(() =>
+    allValidMoves().reduce((acc: (ValidMove[] | undefined)[], move) => {
+      (acc[move.fromPiece.id] = acc[move.fromPiece.id] || []).push(move);
+      return acc;
+    }, new Array(24))
+  );
+
+  const [opaque, setOpaque] = createSignal(false);
   onMount(() => {
-    initBoardBox(board);
     setOpaque(true);
   });
 
-  const { gameState, gameOver, restartGame, playTurn, undo, redo } = newGame();
+  const [dragXY, setDragXY] = createSignal<{ x: number; y: number }>();
+  const hoveredCellIdx = () => {
+    const xy = dragXY();
+    if (xy) {
+      return cellIdxForXY(xy, board);
+    }
+  };
+
+  const playTurn = (fromPiece: PieceState) => {
+    const hoveredCell = hoveredCellIdx();
+    const move = allValidMoves().find(
+      (v) =>
+        v.fromPiece.id === fromPiece.id &&
+        positionToIdx(v.toPos) === hoveredCell
+    );
+    if (move) playMove(move);
+  };
 
   return (
     <div
@@ -28,10 +59,16 @@ export default function App() {
         ref={board!}
         class="relative my-4 grid h-[var(--board-size)] w-[var(--board-size)] grid-cols-8 place-content-stretch bg-gradient-to-br from-white to-black shadow-md shadow-black"
       >
-        <Cells />
+        <Cells hoveredCellIdx={hoveredCellIdx()} />
         <For each={gameState.pieces}>
-          {(piece) => (
-            <Piece piece={piece} turn={gameState.turn} playTurn={playTurn} />
+          {(piece, i) => (
+            <Piece
+              piece={piece}
+              hasValidMove={!!validMovesByPieceId()[i()]?.length}
+              turn={gameState.turn}
+              setDragXY={setDragXY}
+              playTurn={playTurn}
+            />
           )}
         </For>
       </div>

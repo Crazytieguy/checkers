@@ -1,7 +1,7 @@
 import { batch, createEffect, createMemo } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { ai, pickMove } from "./ai";
-import { hoveredCellIdx } from "./ui";
+import useTimeTravel from "./timeTravel";
 
 export type PlayerSide = "red" | "black";
 type Position = {
@@ -15,7 +15,6 @@ export type PieceState = {
   isKing: boolean;
   position: Position;
   isInPlay: boolean;
-  hasValidMove: boolean;
 };
 
 export type GameStateType = {
@@ -56,51 +55,31 @@ function initialState(): GameStateType {
 export function newGame() {
   const [gameState, setGameState] = createStore<GameStateType>(initialState());
   const allValidMoves = createMemo(() => getAllValidMoves(gameState));
-  const gameOver = () => allValidMoves().length === 0;
-  const undoStack: ReturnType<typeof getValidMoveMutators>[] = [];
-  const redoStack: ReturnType<typeof getValidMoveMutators>[] = [];
+  const timeTravel = useTimeTravel();
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.key === "z") timeTravel.undo();
+  });
   const restartGame = () => {
-    undoStack.length = 0;
-    redoStack.length = 0;
+    timeTravel.reset();
     setGameState(initialState());
   };
   const undo = () => {
     batch(() => {
       do {
-        const lastMutators = undoStack.pop();
-        if (!lastMutators) {
-          return;
-        }
-        redoStack.push(lastMutators);
-        setGameState(produce(lastMutators.unDoMove));
+        if (!timeTravel.undo()) break;
       } while (ai() && gameState.turn === "red");
     });
   };
   const redo = () => {
     batch(() => {
       do {
-        const lastMutators = redoStack.pop();
-        if (!lastMutators) {
-          return;
-        }
-        undoStack.push(lastMutators);
-        setGameState(produce(lastMutators.doMove));
+        if (!timeTravel.redo()) break;
       } while (ai() && gameState.turn === "red");
     });
   };
   document.onkeydown = (e) => {
     if (e.ctrlKey && e.key === "z") undo();
   };
-
-  createEffect(() => {
-    batch(() => {
-      const haveValidMoves = Array.from({ length: 24 }, () => false);
-      allValidMoves().forEach((v) => (haveValidMoves[v.fromPiece.id] = true));
-      haveValidMoves.forEach((hasValidMove, id) => {
-        setGameState("pieces", id, "hasValidMove", hasValidMove);
-      });
-    });
-  });
 
   let aiTimeout: number;
 
@@ -116,22 +95,18 @@ export function newGame() {
     }
   });
 
-  const playTurn = (fromPiece: PieceState) => {
-    const hoveredCell = hoveredCellIdx();
-    const move = allValidMoves().find(
-      (v) =>
-        v.fromPiece.id === fromPiece.id &&
-        positionToIdx(v.toPos) === hoveredCell
-    );
-    if (move) playMove(move);
-  };
-
   const playMove = (move: ValidMove) => {
     const mutators = getValidMoveMutators(move, gameState);
-    undoStack.push(mutators);
-    setGameState(produce(mutators.doMove));
+    timeTravel.do_({
+      doMove() {
+        setGameState(produce(mutators.doMove));
+      },
+      undoMove() {
+        setGameState(produce(mutators.undoMove));
+      },
+    });
   };
-  return { gameState, gameOver, restartGame, playTurn, undo, redo };
+  return { gameState, allValidMoves, restartGame, playMove, undo, redo };
 }
 
 function getValidMoveMutators(
@@ -139,7 +114,7 @@ function getValidMoveMutators(
   currentState: GameStateType
 ): {
   doMove: (gameState: GameStateType) => void;
-  unDoMove: (gameState: GameStateType) => void;
+  undoMove: (gameState: GameStateType) => void;
 } {
   const { row, col } = fromPiece.position;
   const isKing = fromPiece.isKing;
@@ -195,7 +170,7 @@ function getValidMoveMutators(
   };
   return {
     doMove,
-    unDoMove,
+    undoMove: unDoMove,
   };
 }
 

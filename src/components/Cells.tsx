@@ -1,11 +1,10 @@
 import { createMemo } from "solid-js";
-import { hoveredCellIdx } from "../logic/ui";
 
-export default function Cells() {
-  const isHovering = () => hoveredCellIdx() !== undefined;
+export default function Cells(props: { hoveredCellIdx: number | undefined }) {
+  const isHovering = () => props.hoveredCellIdx !== undefined;
   return Array.from({ length: 64 }, (_, idx) => {
     const isPlaySquare = (idx + Math.floor(idx / 8)) % 2 === 1;
-    const isDraggedOver = createMemo(() => hoveredCellIdx() === idx);
+    const isDraggedOver = createMemo(() => props.hoveredCellIdx === idx);
     return (
       <div
         class="opacity-75 transition-colors"
