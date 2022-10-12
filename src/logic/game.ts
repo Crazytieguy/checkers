@@ -1,6 +1,5 @@
-import { batch, createEffect, createMemo } from "solid-js";
+import { createMemo } from "solid-js";
 import { createStore, produce } from "solid-js/store";
-import { ai, pickMove } from "./ai";
 import useTimeTravel from "./timeTravel";
 
 export type PlayerSide = "red" | "black";
@@ -23,7 +22,7 @@ export type GameStateType = {
   pieces: PieceState[];
 };
 
-export function playSquare({ row, col }: Position) {
+function playSquare({ row, col }: Position) {
   return (row + col) % 2 === 1;
 }
 
@@ -44,7 +43,6 @@ function initialState(): GameStateType {
       position: idToInitialPosition(id),
       isKing: false,
       isInPlay: true,
-      hasValidMove: false,
       get id() {
         return id;
       },
@@ -53,50 +51,16 @@ function initialState(): GameStateType {
 }
 
 export function newGame() {
-  const [gameState, setGameState] = createStore<GameStateType>(initialState());
-  const allValidMoves = createMemo(() => getAllValidMoves(gameState));
+  const [state, setGameState] = createStore<GameStateType>(initialState());
+  const allValidMoves = createMemo(() => getAllValidMoves(state));
   const timeTravel = useTimeTravel();
-  document.addEventListener("keydown", (e) => {
-    if (e.ctrlKey && e.key === "z") timeTravel.undo();
-  });
-  const restartGame = () => {
+  const restart = () => {
     timeTravel.reset();
     setGameState(initialState());
   };
-  const undo = () => {
-    batch(() => {
-      do {
-        if (!timeTravel.undo()) break;
-      } while (ai() && gameState.turn === "red");
-    });
-  };
-  const redo = () => {
-    batch(() => {
-      do {
-        if (!timeTravel.redo()) break;
-      } while (ai() && gameState.turn === "red");
-    });
-  };
-  document.onkeydown = (e) => {
-    if (e.ctrlKey && e.key === "z") undo();
-  };
-
-  let aiTimeout: number;
-
-  createEffect(() => {
-    clearTimeout(aiTimeout);
-    if (gameState.turn === "red" && ai()) {
-      const move = pickMove(allValidMoves());
-      if (move !== undefined) {
-        setTimeout(() => playMove(move), 300);
-      } else {
-        console.error("AI was unable to pick a move");
-      }
-    }
-  });
 
   const playMove = (move: ValidMove) => {
-    const mutators = getValidMoveMutators(move, gameState);
+    const mutators = getValidMoveMutators(move, state);
     timeTravel.do_({
       doMove() {
         setGameState(produce(mutators.doMove));
@@ -106,7 +70,15 @@ export function newGame() {
       },
     });
   };
-  return { gameState, allValidMoves, restartGame, playMove, undo, redo };
+
+  return {
+    state,
+    allValidMoves,
+    restart,
+    playMove,
+    undo: timeTravel.undo,
+    redo: timeTravel.redo,
+  };
 }
 
 function getValidMoveMutators(
