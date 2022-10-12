@@ -4,13 +4,12 @@ import dialogPolyfill from "dialog-polyfill";
 import "dialog-polyfill/dist/dialog-polyfill.css";
 
 export default function WinnerDialog(props: {
-  winner: PlayerSide;
-  gameOver: boolean;
+  winner: PlayerSide | undefined;
   restartGame: () => void;
 }) {
   let self: HTMLDialogElement;
   createEffect(() => {
-    if (props.gameOver) {
+    if (props.winner) {
       self.showModal();
     }
   });

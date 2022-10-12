@@ -59,7 +59,7 @@ export function newGame() {
     setGameState(initialState());
   };
 
-  const playMove = (move: ValidMove) => {
+  const play = (move: ValidMove) => {
     const mutators = getValidMoveMutators(move, state);
     timeTravel.do_({
       doMove() {
@@ -73,9 +73,18 @@ export function newGame() {
 
   return {
     state,
-    allValidMoves,
+    // eslint-disable-next-line solid/reactivity
+    get allValidMoves() {
+      return allValidMoves();
+    },
+    // eslint-disable-next-line solid/reactivity
+    get winner() {
+      if (!allValidMoves().length) {
+        return other(state.turn);
+      }
+    },
     restart,
-    playMove,
+    play,
     undo: timeTravel.undo,
     redo: timeTravel.redo,
   };

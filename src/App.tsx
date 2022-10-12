@@ -7,30 +7,21 @@ import {
   onMount,
   Show,
 } from "solid-js";
-import {
-  newGame,
-  other,
-  PieceState,
-  positionToIdx,
-  ValidMove,
-} from "./logic/game";
+import { newGame, positionToIdx } from "./logic/game";
 import { cellIdxForXY } from "./logic/ui";
 import Cells from "./components/Cells";
 import { ActionButtons } from "./components/ActionButtons";
 import Piece from "./components/Piece";
 import WinnerDialog from "./components/WinnerDialog";
 import { ai, pickMove } from "./logic/ai";
+import { groupBy } from "./logic/utils";
 
 export default function App() {
   let board: HTMLDivElement;
 
   const game = newGame();
-  const gameOver = () => game.allValidMoves().length === 0;
   const validMovesByPieceId = createMemo(() =>
-    game.allValidMoves().reduce((acc: (ValidMove[] | undefined)[], move) => {
-      (acc[move.fromPiece.id] = acc[move.fromPiece.id] || []).push(move);
-      return acc;
-    }, new Array(24))
+    groupBy(game.allValidMoves, (m) => m.fromPiece.id)
   );
   const undo = () => {
     batch(() => {
@@ -54,9 +45,9 @@ export default function App() {
   createEffect(() => {
     clearTimeout(aiTimeout);
     if (game.state.turn === "red" && ai()) {
-      const move = pickMove(game.allValidMoves());
-      if (move !== undefined) {
-        setTimeout(() => game.playMove(move), 300);
+      const move = pickMove(game.allValidMoves);
+      if (move) {
+        setTimeout(() => game.play(move), 300);
       } else {
         console.error("AI was unable to pick a move");
       }
@@ -76,16 +67,11 @@ export default function App() {
     }
   };
 
-  const playTurn = (fromPiece: PieceState) => {
-    const hoveredCell = hoveredCellIdx();
-    const move = game
-      .allValidMoves()
-      .find(
-        (v) =>
-          v.fromPiece.id === fromPiece.id &&
-          positionToIdx(v.toPos) === hoveredCell
-      );
-    if (move) game.playMove(move);
+  const play = (pieceId: number) => {
+    const move = (validMovesByPieceId()[pieceId] || []).find(
+      (v) => positionToIdx(v.toPos) === hoveredCellIdx()
+    );
+    if (move) game.play(move);
   };
 
   return (
@@ -108,18 +94,14 @@ export default function App() {
                 hasValidMove={!!validMovesByPieceId()[i()]?.length}
                 turn={game.state.turn}
                 setDragXY={setDragXY}
-                playTurn={playTurn}
+                play={play}
               />
             </Show>
           )}
         </For>
       </div>
       <ActionButtons undo={undo} redo={redo} />
-      <WinnerDialog
-        winner={other(game.state.turn)}
-        gameOver={gameOver()}
-        restartGame={game.restart}
-      />
+      <WinnerDialog winner={game.winner} restartGame={game.restart} />
     </div>
   );
 }

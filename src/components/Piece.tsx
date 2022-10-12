@@ -7,7 +7,7 @@ import type { PieceState, PlayerSide } from "../logic/game";
 export default function Piece(props: {
   piece: PieceState;
   hasValidMove: boolean;
-  playTurn: (piece: PieceState) => void;
+  play: (pieceId: number) => void;
   turn: PlayerSide;
   setDragXY: (xy?: { x: number; y: number }) => void;
 }) {
@@ -32,7 +32,7 @@ export default function Piece(props: {
           return;
         }
         batch(() => {
-          props.playTurn(props.piece);
+          props.play(props.piece.id);
           props.setDragXY();
           setMovement({ x: 0, y: 0 });
         });
