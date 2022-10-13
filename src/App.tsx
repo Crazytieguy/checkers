@@ -45,7 +45,7 @@ export default function App() {
   createEffect(() => {
     clearTimeout(aiTimeout);
     if (game.state.turn === "red" && ai()) {
-      const move = pickMove(game.allValidMoves);
+      const move = pickMove(game.state);
       if (move) {
         setTimeout(() => game.play(move), 300);
       } else {

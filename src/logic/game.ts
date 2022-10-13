@@ -32,7 +32,7 @@ function idToInitialPosition(id: number) {
   return { row, col };
 }
 
-function initialState(): GameStateType {
+export function initialState(): GameStateType {
   return {
     turn: "black",
     inChainPieceId: null,
@@ -90,7 +90,7 @@ export function newGame() {
   };
 }
 
-function getValidMoveMutators(
+export function getValidMoveMutators(
   { fromPiece, toPos, eat }: ValidMove,
   currentState: GameStateType
 ): {
@@ -162,7 +162,7 @@ export function positionToIdx({ row, col }: { row: number; col: number }) {
 
 export const other = (p: PlayerSide) => (p === "red" ? "black" : "red");
 
-function getAllValidMoves(gameState: GameStateType) {
+export function getAllValidMoves(gameState: GameStateType) {
   const idxToPiece: (PieceState | undefined)[] = new Array(64);
   const piecesArray = gameState.pieces.filter((p) => p.isInPlay);
   piecesArray.forEach((p) => (idxToPiece[positionToIdx(p.position)] = p));
