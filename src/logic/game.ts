@@ -1,4 +1,4 @@
-import { createEffect, createMemo, createSignal } from "solid-js";
+import { createMemo, createSignal } from "solid-js";
 import useTimeTravel from "./timeTravel";
 
 export const enum CellStatus {
@@ -42,7 +42,6 @@ export function initialState(): GameStateType {
 export function newGame() {
   const [state, setGameState] = createSignal(initialState(), { equals: false });
   const allValidMoves = createMemo(() => getAllValidMoves(state()));
-  createEffect(() => console.log(allValidMoves()));
   const timeTravel = useTimeTravel();
   const restart = () => {
     timeTravel.reset();

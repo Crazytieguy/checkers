@@ -11,7 +11,7 @@ import {
 } from "./game";
 
 export const [ai, setAI] = createSignal(true);
-const DEPTH = 4;
+const DEPTH = 5;
 
 function cloneState(state: GameStateType): GameStateType {
   return {
@@ -25,9 +25,10 @@ export function pickMove(curState: GameStateType): ValidMove | undefined {
   console.time("pickMove");
   const state = cloneState(curState);
   const turn = state.turn;
+  const allValidMoves = getAllValidMoves(state);
   let max = -Infinity;
-  let best = undefined;
-  for (const m of getAllValidMoves(state)) {
+  let best = allValidMoves[0];
+  for (const m of allValidMoves) {
     const value = runWithMutation(m, state, () =>
       state.turn === turn ? search(state) : -search(state)
     );
