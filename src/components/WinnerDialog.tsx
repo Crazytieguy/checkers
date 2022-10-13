@@ -1,15 +1,15 @@
 import { createEffect, onMount } from "solid-js";
-import type { PlayerSide } from "../logic/game";
+import { PieceColor } from "../logic/game";
 import dialogPolyfill from "dialog-polyfill";
 import "dialog-polyfill/dist/dialog-polyfill.css";
 
 export default function WinnerDialog(props: {
-  winner: PlayerSide | undefined;
+  winner: PieceColor | undefined;
   restartGame: () => void;
 }) {
   let self: HTMLDialogElement;
   createEffect(() => {
-    if (props.winner) {
+    if (props.winner !== undefined) {
       self.showModal();
     }
   });
@@ -24,10 +24,10 @@ export default function WinnerDialog(props: {
       <h2 class="text-4xl font-bold">
         <span
           classList={{
-            "text-red": props.winner === "red",
+            "text-red": props.winner === PieceColor.Red,
           }}
         >
-          {props.winner}
+          {props.winner === PieceColor.Red ? "red" : "black"}
         </span>{" "}
         wins!
       </h2>

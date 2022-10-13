@@ -1,17 +1,29 @@
 import { createSignal } from "solid-js";
 import {
+  cellStatus,
   GameStateType,
   getAllValidMoves,
   getValidMoveMutators,
+  pieceColor,
+  PieceType,
+  pieceType,
   ValidMove,
 } from "./game";
 
 export const [ai, setAI] = createSignal(true);
 const DEPTH = 4;
 
+function cloneState(state: GameStateType): GameStateType {
+  return {
+    turn: state.turn,
+    inChainPieceIdx: state.inChainPieceIdx,
+    board: state.board.slice(),
+  };
+}
+
 export function pickMove(curState: GameStateType): ValidMove | undefined {
   console.time("pickMove");
-  const state = JSON.parse(JSON.stringify(curState));
+  const state = cloneState(curState);
   const turn = state.turn;
   let max = -Infinity;
   let best = undefined;
@@ -57,11 +69,11 @@ function runWithMutation<T>(
 
 function boardValue(state: GameStateType) {
   let sum = 0;
-  for (const piece of state.pieces) {
+  for (const piece of state.board) {
     sum +=
-      Number(piece.isInPlay) *
-      (piece.side === state.turn ? 1 : -1) *
-      (piece.isKing ? 2 : 1);
+      cellStatus(piece) *
+      (pieceColor(piece) === state.turn ? 1 : -1) *
+      (pieceType(piece) === PieceType.King ? 2 : 1);
   }
   return sum;
 }

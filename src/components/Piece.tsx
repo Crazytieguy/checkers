@@ -2,13 +2,22 @@ import { DragGesture } from "@use-gesture/vanilla";
 import { batch, onCleanup, onMount, Show } from "solid-js";
 import { createStore } from "solid-js/store";
 import { ai } from "../logic/ai";
-import type { PieceState, PlayerSide } from "../logic/game";
+import {
+  idxToCol,
+  idxToRow,
+  PieceTy,
+  pieceColor,
+  PieceColor,
+  PieceType,
+  pieceType,
+} from "../logic/game";
 
 export default function Piece(props: {
-  piece: PieceState;
+  idx: number;
+  piece: PieceTy;
   hasValidMove: boolean;
-  play: (pieceId: number) => void;
-  turn: PlayerSide;
+  play: () => void;
+  turn: PieceColor;
   setDragXY: (xy?: { x: number; y: number }) => void;
 }) {
   const [movement, setMovement] = createStore({ x: 0, y: 0 });
@@ -32,7 +41,7 @@ export default function Piece(props: {
           return;
         }
         batch(() => {
-          props.play(props.piece.id);
+          props.play();
           props.setDragXY();
           setMovement({ x: 0, y: 0 });
         });
@@ -49,12 +58,12 @@ export default function Piece(props: {
         "drop-shadow-highlight": props.hasValidMove && movementIsZero(),
         "cursor-pointer": props.hasValidMove,
         "z-10": !movementIsZero(),
-        "opacity-80": !ai() && props.turn !== props.piece.side,
+        "opacity-80": !ai() && props.turn !== pieceColor(props.piece),
       }}
       class="absolute max-w-[calc(var(--board-size)/8)] touch-none transition-opacity duration-300"
       style={{
-        "grid-column": `${props.piece.position.col + 1} / span 1`,
-        "grid-row": `${props.piece.position.row + 1} / span 1`,
+        "grid-column": `${idxToCol(props.idx) + 1} / span 1`,
+        "grid-row": `${idxToRow(props.idx) + 1} / span 1`,
         transform: `translate(${movement.x}px, ${movement.y}px)`,
       }}
       xmlns="http://www.w3.org/2000/svg"
@@ -65,8 +74,8 @@ export default function Piece(props: {
         cy="50"
         r="45"
         classList={{
-          "fill-red": props.piece.side === "red",
-          "fill-black": props.piece.side === "black",
+          "fill-red": pieceColor(props.piece) === PieceColor.Red,
+          "fill-black": pieceColor(props.piece) === PieceColor.Black,
         }}
       />
       <circle
@@ -75,7 +84,7 @@ export default function Piece(props: {
         r="33"
         class="fill-[none] stroke-grey-light stroke-2"
       />
-      <Show when={props.piece.isKing}>
+      <Show when={pieceType(props.piece) === PieceType.King}>
         <polyline
           points="
           30 63
