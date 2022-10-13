@@ -97,7 +97,7 @@ export function getValidMoveMutators(
   const turn = currentState.turn;
   const eatPiece = eat === undefined ? undefined : currentState.board[eat];
   const undoMove = (state: GameStateType) => {
-    state.board[from] = state.board[to];
+    state.board[from] = fromPiece;
     state.board[to] = 0;
     if (eat !== undefined && eatPiece) {
       state.board[eat] = eatPiece;
@@ -106,8 +106,8 @@ export function getValidMoveMutators(
     state.turn = turn;
   };
   const doMove = (state: GameStateType) => {
-    state.board[from] = 0;
     state.board[to] = fromPiece;
+    state.board[from] = 0;
     if (
       (pieceColor(fromPiece) === PieceColor.Black && idxToRow(to) === 0) ||
       (pieceColor(fromPiece) === PieceColor.Red && idxToRow(to) === 7)
