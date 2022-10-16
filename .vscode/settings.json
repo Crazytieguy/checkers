@@ -1,7 +1,4 @@
 {
-  "yaml.schemas": {
-    "https://json.schemastore.org/github-workflow.json": "./.github/workflows/deploy.yml"
-  },
   "tailwindCSS.classAttributes": ["class", "className", "classList"],
   "files.associations": {
     "*.css": "tailwindcss"
