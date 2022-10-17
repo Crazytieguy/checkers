@@ -93,7 +93,10 @@ impl Game {
             return None;
         }
         let mut piece = self.board[from]?;
-        if (piece.color() == Black && row(to) == 0) || (piece.color() == Red && row(to) == 7) {
+        if match piece.color() {
+            Black => row(to) == 0,
+            Red => row(to) == 7,
+        } {
             piece = piece.crown();
         }
         let mut state = *self;
