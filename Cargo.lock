@@ -3,5 +3,12 @@
 version = 3
 
 [[package]]
+name = "checkers_ai"
+version = "0.1.0"
+dependencies = [
+ "checkers_game",
+]
+
+[[package]]
 name = "checkers_game"
 version = "0.1.0"

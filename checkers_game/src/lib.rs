@@ -21,7 +21,7 @@ impl Color {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-enum Piece {
+pub enum Piece {
     Red,
     Black,
     RedKing,
@@ -29,21 +29,24 @@ enum Piece {
 }
 
 impl Piece {
-    fn color(self) -> Color {
+    #[must_use]
+    pub fn color(self) -> Color {
         match self {
             Piece::Red | Piece::RedKing => Red,
             Piece::Black | Piece::BlackKing => Black,
         }
     }
 
-    fn is_king(self) -> bool {
+    #[must_use]
+    pub fn is_king(self) -> bool {
         match self {
             Piece::Red | Piece::Black => false,
             Piece::RedKing | Piece::BlackKing => true,
         }
     }
 
-    fn crown(self) -> Self {
+    #[must_use]
+    pub fn crown(self) -> Self {
         match self {
             Piece::Red | Piece::RedKing => Piece::RedKing,
             Piece::Black | Piece::BlackKing => Piece::BlackKing,
@@ -53,16 +56,16 @@ impl Piece {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Game {
-    turn: Color,
-    in_chain_piece_idx: Option<usize>,
-    board: [Option<Piece>; 32],
+    pub turn: Color,
+    pub in_chain_piece_idx: Option<usize>,
+    pub board: [Option<Piece>; 32],
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ValidMove<'a> {
     pub from: usize,
     pub to: usize,
-    eat: Option<usize>,
+    pub eat: Option<usize>,
     for_game: &'a Game,
 }
 
