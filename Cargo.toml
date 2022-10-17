@@ -1,5 +1,5 @@
 [workspace]
 
 members = [
-  "checkers_logic",
+  "checkers_game",
 ]

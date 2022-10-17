@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "checkers_logic"
+name = "checkers_game"
 version = "0.1.0"
