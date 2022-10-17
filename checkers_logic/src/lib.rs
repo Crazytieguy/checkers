@@ -1,5 +1,7 @@
 #![warn(clippy::pedantic)]
 
+use std::ops::Range;
+
 use Color::{Black, Red};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -81,7 +83,7 @@ impl Game {
         if let Some(eat_idx) = eat {
             state.board[eat_idx] = None;
             state.in_chain_piece_idx = Some(to);
-            if state.all_valid_moves().is_empty() {
+            if state.all_valid_moves().next().is_none() {
                 state.in_chain_piece_idx = None;
                 state.turn = state.turn.other();
             }
@@ -91,81 +93,90 @@ impl Game {
         Some(state)
     }
 
-    fn generate_valid_moves(&self, from: usize, eat: bool) -> impl Iterator<Item = ValidMove<'_>> {
-        self.board
-            .get(from)
-            .and_then(std::option::Option::as_ref)
-            .into_iter()
-            .filter(|p| p.color == self.turn)
-            .flat_map(move |p| {
-                let [down, right, up, left] = [1, 1, -1, -1].map(|n| if eat { n * 2 } else { n });
-                [down, up]
-                    .into_iter()
-                    .filter(move |&row_diff| {
-                        p.is_king
-                            || match p.color {
-                                Red => row_diff == down,
-                                Black => row_diff == up,
-                            }
-                    })
-                    .flat_map(move |row_diff| [(p, row_diff, right), (p, row_diff, left)])
-            })
-            .filter_map(move |(p, row_diff, col_diff)| {
-                let from_row = row(from);
-                let from_col = column(from);
-                let to = position_add_to_idx(from_row, from_col, row_diff, col_diff)?;
-
-                // can't land on a piece
-                if self.board[to].is_some() {
-                    return None;
-                }
-
-                // moving 1 is valid
-                if !eat {
-                    return Some(ValidMove {
-                        from,
-                        to,
-                        eat: None,
-                        for_game: self,
-                    });
-                }
-
-                let eat_idx = position_add_to_idx(from_row, from_col, row_diff / 2, col_diff / 2)?;
-
-                // no piece to eat
-                if self.board.get(eat_idx)?.as_ref()?.color == p.color {
-                    return None;
-                }
-
-                Some(ValidMove {
-                    from,
-                    to,
-                    eat: Some(eat_idx),
-                    for_game: self,
-                })
-            })
+    fn generate_valid_moves(
+        &self,
+        from_range: Range<usize>,
+        eat: bool,
+    ) -> impl Iterator<Item = ValidMove> {
+        from_range.flat_map(move |from| {
+            self.board
+                .get(from)
+                .and_then(std::option::Option::as_ref)
+                .into_iter()
+                .filter(|p| p.color == self.turn)
+                .flat_map(move |&p| directions(p, eat))
+                .filter_map(move |diff| self.validate_final(from, diff, eat))
+        })
     }
 
-    #[must_use]
-    pub fn all_valid_moves(&self) -> Vec<ValidMove<'_>> {
+    // from_piece, turn, and diffs are already garuanteed to be valid
+    fn validate_final(
+        &self,
+        from: usize,
+        (row_diff, col_diff): (isize, isize),
+        eat: bool,
+    ) -> Option<ValidMove> {
+        let from_row = row(from);
+        let from_col = column(from);
+        let to = position_add_to_idx(from_row, from_col, row_diff, col_diff)?;
+        // can't land on a piece
+        if self.board[to].is_some() {
+            return None;
+        }
+        // moving 1 is valid
+        if !eat {
+            return Some(ValidMove {
+                from,
+                to,
+                eat: None,
+                for_game: self,
+            });
+        }
+        let eat_idx = position_add_to_idx(from_row, from_col, row_diff / 2, col_diff / 2)?;
+        // no piece to eat
+        if self.board.get(eat_idx)?.as_ref()?.color == self.turn {
+            return None;
+        }
+        Some(ValidMove {
+            from,
+            to,
+            eat: Some(eat_idx),
+            for_game: self,
+        })
+    }
+
+    pub fn all_valid_moves(&self) -> impl Iterator<Item = ValidMove> {
         if let Some(in_chain_piece_idx) = self.in_chain_piece_idx {
             return self
-                .generate_valid_moves(in_chain_piece_idx, true)
-                .collect();
+                .generate_valid_moves(in_chain_piece_idx..in_chain_piece_idx, true)
+                .peekable();
         }
 
-        let eats: Vec<_> = (0..self.board.len())
-            .flat_map(|from| self.generate_valid_moves(from, true))
-            .collect();
+        let mut eats = self
+            .generate_valid_moves(0..self.board.len(), true)
+            .peekable();
 
-        if eats.is_empty() {
-            (0..self.board.len())
-                .flat_map(|from| self.generate_valid_moves(from, false))
-                .collect()
-        } else {
+        if eats.peek().is_some() {
             eats
+        } else {
+            self.generate_valid_moves(0..self.board.len(), false)
+                .peekable()
         }
     }
+}
+
+fn directions(p: Piece, eat: bool) -> impl Iterator<Item = (isize, isize)> {
+    let [down, right, up, left] = [1, 1, -1, -1].map(|n| if eat { n * 2 } else { n });
+    [down, up]
+        .into_iter()
+        .filter(move |&row_diff| {
+            p.is_king
+                || match p.color {
+                    Red => row_diff == down,
+                    Black => row_diff == up,
+                }
+        })
+        .flat_map(move |row_diff| [(row_diff, right), (row_diff, left)])
 }
 
 impl Default for Game {
@@ -204,7 +215,7 @@ mod tests {
     #[test]
     fn correct_initial_valid_moves() {
         let game = Game::new();
-        let valid_moves = game.all_valid_moves();
+        let valid_moves = game.all_valid_moves().collect::<Vec<_>>();
         assert!(valid_moves.iter().all(|m| m.eat.is_none()));
 
         let assert_is_present =
