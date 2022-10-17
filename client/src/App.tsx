@@ -58,7 +58,7 @@ export default function App() {
 
   const [opaque, setOpaque] = createSignal(false);
   onMount(() => {
-    setOpaque(true);
+    setTimeout(() => setOpaque(true));
   });
 
   const [dragXY, setDragXY] = createSignal<{ x: number; y: number }>();

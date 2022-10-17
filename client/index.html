@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="description" content="Play checkers online!" />
+    <link rel="stylesheet" href="src/index.css" />
     <script>
       const isDark = () => document.documentElement.classList.contains("dark");
       const toggleDark = () => {
@@ -23,7 +24,6 @@
     </script>
     <title>Play Checkers</title>
   </head>
-  <noscript>You need to enable JavaScript to run this app.</noscript>
   <body
     class="relative z-0 bg-gradient-to-br from-blue-light to-blue-medium text-black transition-colors duration-1000 before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-br before:from-blue-medium before:to-blue-dark before:opacity-0 before:transition-opacity before:duration-1000 dark:text-grey-light before:dark:opacity-100"
   >
@@ -58,6 +58,7 @@
         </div>
         <h1 class="order-1 mt-3 text-center sm:mt-0">Play Checkers!</h1>
       </header>
+      <noscript>You need to enable JavaScript to run this app.</noscript>
       <div id="root"></div>
     </main>
 
