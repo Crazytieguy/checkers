@@ -21,9 +21,34 @@ impl Color {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct Piece {
-    color: Color,
-    is_king: bool,
+enum Piece {
+    Red,
+    Black,
+    RedKing,
+    BlackKing,
+}
+
+impl Piece {
+    fn color(self) -> Color {
+        match self {
+            Piece::Red | Piece::RedKing => Red,
+            Piece::Black | Piece::BlackKing => Black,
+        }
+    }
+
+    fn is_king(self) -> bool {
+        match self {
+            Piece::Red | Piece::Black => false,
+            Piece::RedKing | Piece::BlackKing => true,
+        }
+    }
+
+    fn crown(self) -> Self {
+        match self {
+            Piece::Red | Piece::RedKing => Piece::RedKing,
+            Piece::Black | Piece::BlackKing => Piece::BlackKing,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -45,14 +70,8 @@ impl Game {
     #[must_use]
     pub fn new() -> Self {
         let mut board = [None; 32];
-        board[..12].fill(Some(Piece {
-            color: Red,
-            is_king: false,
-        }));
-        board[20..].fill(Some(Piece {
-            color: Black,
-            is_king: false,
-        }));
+        board[..12].fill(Some(Piece::Red));
+        board[20..].fill(Some(Piece::Black));
         Self {
             turn: Black,
             in_chain_piece_idx: None,
@@ -74,8 +93,8 @@ impl Game {
             return None;
         }
         let mut piece = self.board[from]?;
-        if (piece.color == Black && row(to) == 0) || (piece.color == Red && row(to) == 7) {
-            piece.is_king = true;
+        if (piece.color() == Black && row(to) == 0) || (piece.color() == Red && row(to) == 7) {
+            piece = piece.crown();
         }
         let mut state = *self;
         state.board[to] = Some(piece);
@@ -103,7 +122,7 @@ impl Game {
                 .get(from)
                 .and_then(std::option::Option::as_ref)
                 .into_iter()
-                .filter(|p| p.color == self.turn)
+                .filter(|p| p.color() == self.turn)
                 .flat_map(move |&p| directions(p, eat))
                 .filter_map(move |diff| self.validate_final(from, diff, eat))
         })
@@ -134,7 +153,7 @@ impl Game {
         }
         let eat_idx = position_add_to_idx(from_row, from_col, row_diff / 2, col_diff / 2)?;
         // no piece to eat
-        if self.board.get(eat_idx)?.as_ref()?.color == self.turn {
+        if self.board.get(eat_idx)?.as_ref()?.color() == self.turn {
             return None;
         }
         Some(ValidMove {
@@ -170,8 +189,8 @@ fn directions(p: Piece, eat: bool) -> impl Iterator<Item = (isize, isize)> {
     [down, up]
         .into_iter()
         .filter(move |&row_diff| {
-            p.is_king
-                || match p.color {
+            p.is_king()
+                || match p.color() {
                     Red => row_diff == down,
                     Black => row_diff == up,
                 }
